@@ -19,8 +19,8 @@ const AdminDashboard = ({ user }) => {
     const fetchData = async () => {
         const token = localStorage.getItem('token');
         const [roomsRes, eventsRes] = await Promise.all([
-            axios.get('http://localhost:8080/api/rooms', { headers: { Authorization: token } }),
-            axios.get('http://localhost:8080/api/events')
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`, { headers: { Authorization: token } }),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/events`)
         ]);
         setRooms(roomsRes.data || []);
         setEvents(eventsRes.data || []);
@@ -29,21 +29,21 @@ const AdminDashboard = ({ user }) => {
     const createRoom = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:8080/api/rooms', { ...roomForm, admin_id: user.id }, { headers: { Authorization: token } });
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`, { ...roomForm, admin_id: user.id }, { headers: { Authorization: token } });
         setRoomForm({ title: '', description: '', timer_minutes: 30 });
         fetchData();
     };
 
     const closeRoom = async (roomId) => {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:8080/api/rooms/close', { room_id: roomId }, { headers: { Authorization: token } });
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/rooms/close`, { room_id: roomId }, { headers: { Authorization: token } });
         fetchData();
     };
 
     const createEvent = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:8080/api/events',
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/events`,
             { ...eventForm, event_date: new Date(eventForm.event_date).toISOString() },
             { headers: { Authorization: token } }
         );

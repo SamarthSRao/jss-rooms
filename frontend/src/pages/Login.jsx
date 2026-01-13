@@ -16,7 +16,7 @@ const Login = ({ setUser }) => {
         try {
             const endpoint = mode === 'login' ? 'login' : 'register';
             const payload = mode === 'login' ? { usn } : { usn, role };
-            const response = await axios.post(`http://localhost:8080/api/${endpoint}`, payload);
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/${endpoint}`, payload);
             const { token, user } = response.data;
             localStorage.setItem('token', token);
             setUser(user);

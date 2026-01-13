@@ -12,7 +12,7 @@ const Room = ({ user }) => {
     const scrollRef = useRef();
 
     useEffect(() => {
-        const ws = new WebSocket(`ws://localhost:8080/ws?room=${id}&usn=${user.usn}&userId=${user.id}`);
+        const ws = new WebSocket(`${import.meta.env.VITE_WS_BASE_URL}/ws?room=${id}&usn=${user.usn}&userId=${user.id}`);
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);

@@ -14,8 +14,8 @@ const Explore = ({ user }) => {
             try {
                 const token = localStorage.getItem('token');
                 const [roomsRes, eventsRes] = await Promise.all([
-                    axios.get('http://localhost:8080/api/rooms', { headers: { Authorization: token } }),
-                    axios.get('http://localhost:8080/api/events')
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`, { headers: { Authorization: token } }),
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/events`)
                 ]);
                 setRooms(roomsRes.data || []);
                 setEvents(eventsRes.data || []);
