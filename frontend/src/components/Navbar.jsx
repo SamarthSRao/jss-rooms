@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, Compass, UserCircle, LogOut, ShieldCheck } from 'lucide-react';
+import { Compass, ShieldCheck, LogOut, Code } from 'lucide-react';
 
 const Navbar = ({ user, setUser }) => {
     const navigate = useNavigate();
@@ -12,42 +12,51 @@ const Navbar = ({ user, setUser }) => {
     };
 
     return (
-        <nav style={{ padding: '20px 0', borderBottom: '1px solid var(--border)', marginBottom: '40px' }}>
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Link to="/explore" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'var(--primary)', padding: '6px', borderRadius: '8px' }}>
-                        <Home size={20} />
+        <nav className="fade-in" style={{ borderBottom: '1px solid var(--border)', marginBottom: '40px', background: 'var(--black)' }}>
+            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 40px' }}>
+                <Link to="/explore" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: 'var(--white)', padding: '4px', border: '1px solid var(--white)' }}>
+                        <Code size={18} color="black" />
                     </div>
-                    <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>JSS Rooms</span>
+                    <div>
+                        <span className="caps" style={{ fontSize: '1.4rem', letterSpacing: '-0.04em' }}>
+                            "JSS ROOMS"
+                        </span>
+                        <div className="monospaced" style={{ fontSize: '7px', marginTop: '-4px', opacity: 0.5 }}>©2026 FOR DISPLAY ONLY</div>
+                    </div>
                 </Link>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                    <Link to="/explore" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Compass size={18} /> Explore
+                <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+                    <Link to="/explore" className="caps hover-glitch" style={{ color: 'var(--white)', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em' }}>
+                        "EXPLORE"
                     </Link>
 
                     {user.role === 'admin' && (
-                        <Link to="/admin" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <ShieldCheck size={18} /> Admin
+                        <Link to="/admin" className="caps hover-glitch" style={{ color: 'var(--safety-yellow)', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em' }}>
+                            "ADMIN"
+                            <span className="tag-zip" style={{ background: 'var(--safety-yellow)' }}>MASTER</span>
                         </Link>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderLeft: '1px solid var(--border)', paddingLeft: '32px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderLeft: '1px solid var(--border)', paddingLeft: '40px' }}>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '13px', fontWeight: '600' }}>{user.usn}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.role === 'admin' ? 'Administrator' : 'Student'}</div>
+                            <div className="monospaced caps" style={{ fontSize: '12px', fontWeight: '900' }}>ID: {user.usn}</div>
+                            <div className="monospaced" style={{ fontSize: '9px', opacity: 0.6 }}>{user.role === 'admin' ? 'LVL.ADMIN' : 'LVL.USER'}</div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                            className="hover-glitch"
+                            style={{ background: 'var(--safety-orange)', border: 'none', color: 'black', cursor: 'pointer', padding: '10px' }}
                         >
-                            <LogOut size={18} />
+                            <LogOut size={16} strokeWidth={3} />
                         </button>
                     </div>
                 </div>
             </div>
+            <div className="cross-hatch" style={{ height: '4px', width: '100%', opacity: 0.3 }}></div>
         </nav>
     );
 };
 
 export default Navbar;
+
