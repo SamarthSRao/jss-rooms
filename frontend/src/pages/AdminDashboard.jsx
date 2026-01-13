@@ -8,7 +8,7 @@ const AdminDashboard = ({ user }) => {
     const [events, setEvents] = useState([]);
 
     // Form states
-    const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_hours: 24 });
+    const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
     const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '' });
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const AdminDashboard = ({ user }) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         await axios.post('http://localhost:8080/api/rooms', { ...roomForm, admin_id: user.id }, { headers: { Authorization: token } });
-        setRoomForm({ title: '', description: '', timer_hours: 24 });
+        setRoomForm({ title: '', description: '', timer_minutes: 30 });
         fetchData();
     };
 
@@ -41,9 +41,19 @@ const AdminDashboard = ({ user }) => {
 
     const createEvent = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:8080/api/events', { ...eventForm, event_date: new Date(eventForm.event_date).toISOString() });
+        const token = localStorage.getItem('token');
+        await axios.post('http://localhost:8080/api/events',
+            { ...eventForm, event_date: new Date(eventForm.event_date).toISOString() },
+            { headers: { Authorization: token } }
+        );
         setEventForm({ title: '', description: '', category: 'Workshop', event_date: '' });
         fetchData();
+    };
+
+    const copyInviteLink = (roomId) => {
+        const link = `${window.location.origin}/room/${roomId}`;
+        navigator.clipboard.writeText(link);
+        alert('Invite link copied to clipboard!');
     };
 
     return (
@@ -86,14 +96,17 @@ const AdminDashboard = ({ user }) => {
                                 value={roomForm.description}
                                 onChange={e => setRoomForm({ ...roomForm, description: e.target.value })}
                             />
-                            <input
-                                type="number"
+                            <label style={{ fontSize: '14px', marginBottom: '4px' }}>Room Duration (Minutes)</label>
+                            <select
                                 className="input-field"
-                                placeholder="Timer (Hours)"
-                                value={roomForm.timer_hours}
-                                onChange={e => setRoomForm({ ...roomForm, timer_hours: parseInt(e.target.value) })}
+                                value={roomForm.timer_minutes}
+                                onChange={e => setRoomForm({ ...roomForm, timer_minutes: parseInt(e.target.value) })}
                                 required
-                            />
+                            >
+                                <option value={5}>5 Minutes</option>
+                                <option value={10}>10 Minutes</option>
+                                <option value={30}>30 Minutes</option>
+                            </select>
                             <button type="submit" className="btn-primary">Create Room</button>
                         </form>
                     </div>
@@ -103,12 +116,20 @@ const AdminDashboard = ({ user }) => {
                         {rooms.map(room => (
                             <div key={room.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--border)' }}>
                                 <div>
-                                    <div style={{ fontWeight: '600' }}>{room.title}</div>
-                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Timer: {room.timer_hours}h</div>
+                                    <div style={{ fontWeight: '600' }}>{room.title} (ID: {room.id})</div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Timer: {room.timer_minutes}m</div>
                                 </div>
-                                <button onClick={() => closeRoom(room.id)} style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                                    <Trash2 size={18} /> Close
-                                </button>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <button
+                                        onClick={() => copyInviteLink(room.id)}
+                                        style={{ background: 'var(--bg-card)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '4px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}
+                                    >
+                                        Copy Link
+                                    </button>
+                                    <button onClick={() => closeRoom(room.id)} style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

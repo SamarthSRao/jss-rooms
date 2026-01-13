@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func handleLogin(w http.ResponseWriter, r *http.Request) {
+func handleRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -26,22 +26,50 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var existingUser User
+	if err := DB.Where("usn = ?", input.USN).First(&existingUser).Error; err == nil {
+		http.Error(w, "USN already registered. Please login.", http.StatusConflict)
+		return
+	}
+
+	role := input.Role
+	if role == "" {
+		role = "user"
+	}
+	user := User{USN: input.USN, Role: role}
+	if err := DB.Create(&user).Error; err != nil {
+		http.Error(w, "Could not register user", http.StatusInternalServerError)
+		return
+	}
+
+	generateTokenResponse(w, user)
+}
+
+func handleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var input struct {
+		USN string `json:"usn"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
 	var user User
 	result := DB.Where("usn = ?", input.USN).First(&user)
 	if result.Error != nil {
-		// If user not found, register them with the requested role
-		role := input.Role
-		if role == "" {
-			role = "user"
-		}
-		user = User{USN: input.USN, Role: role}
-
-		if err := DB.Create(&user).Error; err != nil {
-			http.Error(w, "Could not register user", http.StatusInternalServerError)
-			return
-		}
+		http.Error(w, "USN not found. Please register first.", http.StatusNotFound)
+		return
 	}
 
+	generateTokenResponse(w, user)
+}
+
+func generateTokenResponse(w http.ResponseWriter, user User) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":   user.ID,
 		"usn":  user.USN,
@@ -91,10 +119,10 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var input struct {
-			Title       string `json:"title"`
-			Description string `json:"description"`
-			TimerHours  int    `json:"timer_hours"`
-			AdminID     string `json:"admin_id"`
+			Title        string `json:"title"`
+			Description  string `json:"description"`
+			TimerMinutes int    `json:"timer_minutes"`
+			AdminID      string `json:"admin_id"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -103,11 +131,11 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 
 		adminID, _ := uuid.Parse(input.AdminID)
 		room := Room{
-			Title:       input.Title,
-			Description: input.Description,
-			AdminID:     adminID,
-			TimerHours:  input.TimerHours,
-			ExpiresAt:   time.Now().Add(time.Duration(input.TimerHours) * time.Hour),
+			Title:        input.Title,
+			Description:  input.Description,
+			AdminID:      adminID,
+			TimerMinutes: input.TimerMinutes,
+			ExpiresAt:    time.Now().Add(time.Duration(input.TimerMinutes) * time.Minute),
 		}
 		DB.Create(&room)
 		json.NewEncoder(w).Encode(room)
@@ -191,9 +219,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Save to DB
-			roomUUID, _ := uuid.Parse(roomID)
 			msg := Message{
-				RoomID:  roomUUID,
+				RoomID:  roomID,
 				UserID:  userID,
 				UserUSN: userUSN,
 				Content: string(message),

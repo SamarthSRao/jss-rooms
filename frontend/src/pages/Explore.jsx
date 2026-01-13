@@ -53,7 +53,7 @@ const Explore = ({ user }) => {
                             </p>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '12px', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <Clock size={14} /> Expires in {room.timer_hours}h
+                                    <Clock size={14} /> Expires in {room.timer_minutes}m
                                 </span>
                                 <Link to={`/room/${room.id}`} className="btn-primary" style={{ padding: '8px 16px', fontSize: '14px' }}>
                                     Join Room

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,20 +17,20 @@ type User struct {
 }
 
 type Room struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primaryKey" json:"id"`
-	Title       string         `gorm:"not null" json:"title"`
-	Description string         `json:"description"`
-	AdminID     uuid.UUID      `gorm:"type:uuid" json:"admin_id"`
-	TimerHours  int            `json:"timer_hours"`
-	ExpiresAt   time.Time      `json:"expires_at"`
-	IsClosed    bool           `gorm:"default:false" json:"is_closed"`
-	CreatedAt   time.Time      `json:"created_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ID           string         `gorm:"primaryKey" json:"id"` // 6-digit numeric ID
+	Title        string         `gorm:"not null" json:"title"`
+	Description  string         `json:"description"`
+	AdminID      uuid.UUID      `gorm:"type:uuid" json:"admin_id"`
+	TimerMinutes int            `json:"timer_minutes"`
+	ExpiresAt    time.Time      `json:"expires_at"`
+	IsClosed     bool           `gorm:"default:false" json:"is_closed"`
+	CreatedAt    time.Time      `json:"created_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type Message struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	RoomID    uuid.UUID `gorm:"type:uuid;index" json:"room_id"`
+	RoomID    string    `gorm:"index" json:"room_id"` // Matches Room.ID string
 	UserID    uuid.UUID `gorm:"type:uuid" json:"user_id"`
 	UserUSN   string    `json:"user_usn"`
 	Content   string    `gorm:"not null" json:"content"`
@@ -51,7 +53,8 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 func (r *Room) BeforeCreate(tx *gorm.DB) (err error) {
-	r.ID = uuid.New()
+	// Generate 6-digit numeric ID
+	r.ID = fmt.Sprintf("%06d", rand.Intn(1000000))
 	return
 }
 
