@@ -229,3 +229,148 @@ body {
 .fade-in {
   animation: fadeIn 0.8s ease-out forwards;
 }
+
+/* LANDING PAGE SPECIFIC */
+.landing-container {
+  min-height: 100vh;
+  padding: 80px 40px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.construction-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.line-v {
+  width: 1px;
+  height: 100%;
+}
+
+.line-h {
+  width: 100%;
+  height: 1px;
+}
+
+.metadata {
+  position: absolute;
+  font-size: 10px;
+  line-height: 1.4;
+  z-index: 10;
+  padding: 20px;
+}
+
+.top-left {
+  top: 0;
+  left: 0;
+}
+
+.top-right {
+  top: 0;
+  right: 0;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 60px;
+  z-index: 1;
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin: 20px 0;
+}
+
+.stencil-text {
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--safety-orange);
+}
+
+.hero-description {
+  max-width: 400px;
+  margin: 30px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.cta-group {
+  display: flex;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.btn-industrial-outline {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--white);
+  padding: 12px 32px;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-industrial-outline:hover {
+  border-color: var(--white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.asymmetric-image {
+  height: 60vh;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.image-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: var(--black);
+  padding: 10px;
+  border: 1px solid var(--safety-orange);
+}
+
+.qr-code-aesthetic {
+  font-size: 8px;
+  color: var(--safety-orange);
+}
+
+.landing-footer {
+  margin-top: auto;
+  padding-top: 40px;
+  font-size: 10px;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+
+  .asymmetric-image {
+    display: none;
+  }
+}
