@@ -1,1 +1,7 @@
-/* /index.html 200
+# Serve static files directly
+/*.js  200
+/*.css  200
+/assets/*  200
+
+# Everything else goes to index.html (SPA routing)
+/*  /index.html  200
