@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Compass, ShieldCheck, LogOut, Code } from 'lucide-react';
+import { Compass, ShieldCheck, LogOut, Code, User } from 'lucide-react';
 
 const Navbar = ({ user, setUser }) => {
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Navbar = ({ user, setUser }) => {
     };
 
     return (
-        <nav className="fade-in" style={{ borderBottom: '1px solid var(--border)', marginBottom: '40px', background: 'var(--black)' }}>
+        <nav className="fade-in" style={{ borderBottom: '1px solid var(--border)', marginBottom: '40px', background: 'var(--black)', zIndex: 1000, position: 'relative' }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 40px' }}>
                 <Link to="/explore" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ background: 'var(--white)', padding: '4px', border: '1px solid var(--white)' }}>
@@ -26,29 +26,40 @@ const Navbar = ({ user, setUser }) => {
                     </div>
                 </Link>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-                    <Link to="/explore" className="caps hover-glitch" style={{ color: 'var(--white)', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                    <Link to="/explore" className="caps hover-glitch" style={{ color: 'var(--white)', textDecoration: 'none', fontSize: '11px', letterSpacing: '0.1em' }}>
                         "EXPLORE"
                     </Link>
 
+                    <Link to="/profile" className="caps hover-glitch" style={{ color: 'var(--white)', textDecoration: 'none', fontSize: '11px', letterSpacing: '0.1em' }}>
+                        "PROFILE"
+                    </Link>
+
                     {user.role === 'admin' && (
-                        <Link to="/admin" className="caps hover-glitch" style={{ color: 'var(--safety-yellow)', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em' }}>
-                            "ADMIN"
-                            <span className="tag-zip" style={{ background: 'var(--safety-yellow)' }}>MASTER</span>
-                        </Link>
+                        <>
+                            <Link to="/admin" className="caps hover-glitch" style={{ color: 'var(--safety-yellow)', textDecoration: 'none', fontSize: '11px', letterSpacing: '0.1em' }}>
+                                "ADMIN"
+                                <span className="tag-zip" style={{ background: 'var(--safety-yellow)', fontSize: '8px' }}>MASTER</span>
+                            </Link>
+                            <Link to="/admin/checkin" className="caps hover-glitch" style={{ color: 'var(--blueprint-blue)', textDecoration: 'none', fontSize: '11px', letterSpacing: '0.1em' }}>
+                                "CHECK_IN"
+                            </Link>
+                        </>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderLeft: '1px solid var(--border)', paddingLeft: '40px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                            <div className="monospaced caps" style={{ fontSize: '12px', fontWeight: '900' }}>ID: {user.usn}</div>
-                            <div className="monospaced" style={{ fontSize: '9px', opacity: 0.6 }}>{user.role === 'admin' ? 'LVL.ADMIN' : 'LVL.USER'}</div>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderLeft: '1px solid var(--border)', paddingLeft: '32px' }}>
+                        <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <div style={{ textAlign: 'right' }}>
+                                <div className="monospaced caps" style={{ fontSize: '11px', fontWeight: '900' }}>ID: {user.usn}</div>
+                                <div className="monospaced" style={{ fontSize: '8px', opacity: 0.6 }}>{user.role === 'admin' ? 'LVL.ADMIN' : 'LVL.USER'}</div>
+                            </div>
+                        </Link>
                         <button
                             onClick={handleLogout}
                             className="hover-glitch"
-                            style={{ background: 'var(--safety-orange)', border: 'none', color: 'black', cursor: 'pointer', padding: '10px' }}
+                            style={{ background: 'var(--safety-orange)', border: 'none', color: 'black', cursor: 'pointer', padding: '8px' }}
                         >
-                            <LogOut size={16} strokeWidth={3} />
+                            <LogOut size={14} strokeWidth={3} />
                         </button>
                     </div>
                 </div>
@@ -59,4 +70,3 @@ const Navbar = ({ user, setUser }) => {
 };
 
 export default Navbar;
-

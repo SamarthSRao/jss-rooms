@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Clock, Calendar, ArrowRight } from 'lucide-react';
+import { MapPin, Users, Clock, Calendar, ArrowRight, Zap, ExternalLink } from 'lucide-react';
 
 const Explore = ({ user }) => {
     const [rooms, setRooms] = useState([]);
@@ -31,110 +31,185 @@ const Explore = ({ user }) => {
     return (
         <div className="container fade-in">
             <header style={{ marginBottom: '80px', position: 'relative' }}>
-                <div className="monospaced caps" style={{ fontSize: '10px', opacity: 0.5, marginBottom: '8px' }}>
-                    REF. 088 // DISCOVER_MODULE
+                <div className="monospaced" style={{ fontSize: '10px', opacity: 0.3, letterSpacing: '0.2em', marginBottom: '12px' }}>
+                    PLATFORM_ACCESS_04
                 </div>
-                <h1 className="caps" style={{ fontSize: '4rem', letterSpacing: '-0.06em', marginBottom: '4px', lineHeight: 0.9 }}>
-                    "EXPLORE"
+                <h1 className="caps" style={{ fontSize: '4rem', letterSpacing: '-0.07em', marginBottom: '8px', lineHeight: 0.85, fontWeight: '900' }}>
+                    EXPLORE
                 </h1>
-                <div className="monospaced caps" style={{ fontSize: '12px', opacity: 0.7 }}>
-                    Collection of active nodes and institutional events. ©2026
+                <div className="flex items-center gap-6 mt-6">
+                    <span className="monospaced text-[11px] opacity-60">
+                        ACTIVE_NODES & CAMPUS_EVENTS
+                    </span>
+                    <div style={{ height: '1px', width: '100px', background: 'var(--white)', opacity: 0.2 }}></div>
+                    <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', fontSize: '8px' }}>v4.5</span>
                 </div>
-                <div className="cross-hatch" style={{ height: '2px', width: '200px', marginTop: '20px', background: 'var(--safety-orange)' }}></div>
             </header>
 
+            {/* ROOMS SECTION */}
             <section style={{ marginBottom: '100px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '40px' }}>
-                    <h2 className="caps" style={{ fontSize: '1.5rem', letterSpacing: '-0.02em' }}>"ACTIVE ROOMS"</h2>
-                    <span className="monospaced" style={{ fontSize: '12px', opacity: 0.5 }}>COUNT: {rooms.length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"ROOMS"</h2>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '40px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '32px' }}>
                     {rooms.map((room, idx) => (
                         <motion.div
                             key={room.id}
-                            whileHover={{ scale: 1.02 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
                             className="card-industrial"
+                            style={{ padding: '32px', display: 'flex', flexDirection: 'column', minHeight: '300px' }}
                         >
-                            <div className="card-metadata">ID: RM-{idx.toString().padStart(3, '0')}</div>
-                            <div className="tag-zip" style={{ marginBottom: '16px' }}>LIVE</div>
+                            <div className="flex justify-between items-start mb-8">
+                                <div className="monospaced text-[9px] opacity-40">REF_{room.id}</div>
+                                <div className="tag-zip" style={{ background: 'var(--safety-yellow)', color: 'black', fontSize: '8px', margin: 0 }}>LIVE</div>
+                            </div>
 
-                            <h3 className="caps" style={{ fontSize: '1.4rem', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+                            <h3 className="caps" style={{ fontSize: '1.5rem', marginBottom: '12px', lineHeight: 1.1, fontWeight: '900' }}>
                                 {room.title}
                             </h3>
 
-                            <p className="opacity-60" style={{ fontSize: '13px', marginBottom: '32px', height: '40px', overflow: 'hidden', lineHeight: '1.6' }}>
-                                {room.description}
+                            <p className="opacity-50" style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: 'auto', paddingBottom: '32px' }}>
+                                {room.description || 'No description provided.'}
                             </p>
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                <div className="monospaced" style={{ fontSize: '10px' }}>
-                                    <div style={{ opacity: 0.5 }}>TTL:</div>
-                                    <div style={{ color: 'var(--safety-orange)', fontWeight: 'bold' }}>{room.timer_minutes} MINUTES</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <Clock size={12} className="opacity-30" />
+                                        <span className="monospaced text-[11px] font-black" style={{ color: 'var(--safety-orange)' }}>{room.timer_minutes}M</span>
+                                    </div>
+                                    <div style={{ width: '1px', height: '12px', background: 'var(--border)', opacity: 0.3 }}></div>
+                                    <div className="monospaced text-[10px] opacity-40">AUTO_PURGE</div>
                                 </div>
 
-                                <Link to={`/room/${room.id}`} className="btn-industrial" style={{ padding: '8px 16px', fontSize: '11px' }} data-ref="JOIN">
-                                    "ENTER" <ArrowRight size={14} />
+                                <Link to={`/room/${room.id}`} className="btn-industrial" style={{ padding: '6px 16px', fontSize: '10px' }}>
+                                    "ACCESS"
                                 </Link>
                             </div>
                         </motion.div>
                     ))}
-                    {rooms.length === 0 && !loading && (
-                        <div className="monospaced opacity-30 caps" style={{ border: '1px dashed var(--border)', padding: '40px', textAlign: 'center' }}>
-                            -- NO ACTIVE NODES DETECTED --
-                        </div>
-                    )}
                 </div>
             </section>
 
+            {/* COMMUNITIES SECTION */}
             <section>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '40px' }}>
-                    <h2 className="caps" style={{ fontSize: '1.5rem', letterSpacing: '-0.02em' }}>"EVENTS"</h2>
-                    <span className="monospaced" style={{ fontSize: '12px', opacity: 0.5 }}>CAMPUS_INTEL</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"COMMUNITIES"</h2>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '30px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '32px' }}>
                     {events.map((event, idx) => (
-                        <div key={event.id} className="card-industrial" style={{ padding: '0', overflow: 'hidden' }}>
-                            <div style={{ height: '200px', background: 'var(--industrial-gray)', position: 'relative', borderBottom: '1px solid var(--border)' }}>
-                                {event.image_url ? (
-                                    <img src={event.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
-                                ) : (
-                                    <div className="cross-hatch" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <span className="monospaced caps opacity-30">NO_IMG_ASSET</span>
+                        <Link key={event.id} to={`/event/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.08 }}
+                                className="group"
+                                style={{
+                                    background: 'var(--black)',
+                                    border: '1px solid var(--border)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    transition: 'all 0.3s ease',
+                                    overflow: 'hidden',
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{ height: '240px', overflow: 'hidden', position: 'relative' }}>
+                                    {event.image_url ? (
+                                        <img
+                                            src={event.image_url}
+                                            alt=""
+                                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                                        />
+                                    ) : (
+                                        <div className="cross-hatch w-full h-full flex items-center justify-center opacity-10">
+                                            <Zap size={32} />
+                                        </div>
+                                    )}
+
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+
+                                    <div className="absolute top-4 left-4">
+                                        <div className="bg-black/80 backdrop-blur-md px-2 py-1 border border-white/20 monospaced text-[8px] font-black text-white caps">
+                                            {event.category}
+                                        </div>
                                     </div>
-                                )}
-                                <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
-                                    <span className="tag-zip">{event.category}</span>
+
+                                    <div className="absolute bottom-4 left-4">
+                                        <div className="monospaced text-[10px] text-white font-black flex items-center gap-2">
+                                            <Calendar size={12} className="opacity-50" />
+                                            {new Date(event.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="monospaced" style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '8px', background: 'black', padding: '2px 6px' }}>
-                                    EVT. {idx + 100}
+
+                                <div style={{ padding: '24px', flex: 1 }}>
+                                    <h3 className="caps" style={{
+                                        fontSize: '1.5rem',
+                                        lineHeight: 1,
+                                        fontWeight: '900',
+                                        letterSpacing: '-0.02em',
+                                        marginBottom: '20px'
+                                    }}>
+                                        {event.title}
+                                    </h3>
+
+                                    {/* NEAT METADATA ROW */}
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '16px',
+                                        borderTop: '1px solid var(--border)',
+                                        paddingTop: '20px'
+                                    }}>
+                                        <div className="flex items-center gap-2">
+                                            <MapPin size={12} className="opacity-30" />
+                                            <span className="monospaced text-[9px] caps opacity-60 tracking-wider">
+                                                {event.location || 'CAMPUS'}
+                                            </span>
+                                        </div>
+                                        <div style={{ width: '4px', height: '1px', background: 'var(--border)', opacity: 0.3 }}></div>
+                                        <div className="flex items-center gap-2">
+                                            <Users size={12} className="opacity-30" />
+                                            <span className="monospaced text-[9px] caps opacity-60 tracking-wider">
+                                                {event.capacity ? `${event.capacity} SLOTS` : 'OPEN'}
+                                            </span>
+                                        </div>
+                                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <ArrowRight size={14} />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div style={{ padding: '24px' }}>
-                                <h3 className="caps" style={{ marginBottom: '10px', fontSize: '1.2rem' }}>{event.title}</h3>
-                                <p className="opacity-60" style={{ fontSize: '13px', marginBottom: '20px' }}>{event.description}</p>
-                                <div className="monospaced" style={{ fontSize: '10px', display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.5 }}>
-                                    <MapPin size={10} /> LOCK: JSS_STU_CAMPUS
-                                </div>
-                            </div>
-                        </div>
+
+                                <div className="w-0 group-hover:w-full h-[2px] bg-white transition-all duration-500"></div>
+                            </motion.div>
+                        </Link>
                     ))}
-                    {events.length === 0 && !loading && (
-                        <div className="monospaced opacity-30 caps" style={{ padding: '20px' }}>
-                            NULL_DATABASE_STATE
-                        </div>
-                    )}
                 </div>
             </section>
 
-            <footer style={{ marginTop: '120px', padding: '40px 0', borderTop: '1px solid var(--border)', opacity: 0.3 }} className="monospaced caps">
-                <div style={{ fontSize: '10px' }}>PROTOTYPE VERSION 2.0.4 - FOR ACADEMIC USE ONLY</div>
-                <div style={{ fontSize: '10px' }}>DEVELOPED BY JSS_DEV_CORE</div>
+            <footer style={{ marginTop: '120px', paddingBottom: '40px' }}>
+                <div className="flex justify-between items-center monospaced opacity-20 text-[8px] uppercase tracking-[0.3em]">
+                    <span>SECURE_ACCESS_V4.5</span>
+                    <span className="opacity-10">////////////////////////////////////////////////////////////</span>
+                    <span>{new Date().toLocaleTimeString()}</span>
+                </div>
             </footer>
+
+            <style>{`
+                .group:hover {
+                    border-color: rgba(255, 255, 255, 0.4) !important;
+                    transform: translateY(-4px);
+                }
+            `}</style>
         </div>
     );
 };
 
 export default Explore;
-

@@ -10,10 +10,22 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	USN       string    `gorm:"uniqueIndex;not null" json:"usn"`
-	Role      string    `gorm:"default:'user'" json:"role"` // 'admin' or 'user'
-	CreatedAt time.Time `json:"created_at"`
+	ID           uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	USN          string     `gorm:"uniqueIndex;not null" json:"usn"`
+	Name         string     `json:"name"`
+	Bio          string     `json:"bio"`
+	Role         string     `gorm:"default:'user'" json:"role"` // 'admin' or 'user'
+	GroupID      *uuid.UUID `gorm:"type:uuid" json:"group_id"`
+	Group        *Group     `gorm:"foreignKey:GroupID" json:"group,omitempty"`
+	ProfileImage string     `json:"profile_image"`
+	CreatedAt    time.Time  `json:"created_at"`
+}
+
+type Group struct {
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Name        string    `gorm:"not null" json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Room struct {
@@ -43,12 +55,30 @@ type Event struct {
 	Description string    `json:"description"`
 	Category    string    `json:"category"`
 	ImageUrl    string    `json:"image_url"`
+	Location    string    `json:"location"`
+	Capacity    int       `json:"capacity"`
+	OrganizerID uuid.UUID `gorm:"type:uuid" json:"organizer_id"`
 	EventDate   time.Time `json:"event_date"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+type Registration struct {
+	ID          uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	EventID     uuid.UUID  `gorm:"type:uuid;index" json:"event_id"`
+	UserID      uuid.UUID  `gorm:"type:uuid;index" json:"user_id"`
+	QRCodeToken string     `gorm:"uniqueIndex" json:"qr_code_token"`
+	Status      string     `gorm:"default:'registered'" json:"status"` // 'registered', 'checked_in', 'cancelled'
+	CheckedInAt *time.Time `json:"checked_in_at"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.ID = uuid.New()
+	return
+}
+
+func (g *Group) BeforeCreate(tx *gorm.DB) (err error) {
+	g.ID = uuid.New()
 	return
 }
 
@@ -65,5 +95,10 @@ func (m *Message) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (e *Event) BeforeCreate(tx *gorm.DB) (err error) {
 	e.ID = uuid.New()
+	return
+}
+
+func (reg *Registration) BeforeCreate(tx *gorm.DB) (err error) {
+	reg.ID = uuid.New()
 	return
 }

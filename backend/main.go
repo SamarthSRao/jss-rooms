@@ -32,7 +32,7 @@ func initDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		// Default for local development
-		dsn = "host=localhost user=postgres password=postgres dbname=jssrooms port=5433 sslmode=disable"
+		dsn = "host=localhost user=postgres password=Strawteddy12 dbname=jssrooms port=5432 sslmode=disable"
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -117,6 +117,11 @@ func main() {
 	mux.HandleFunc("/api/rooms", authMiddleware(handleRooms))
 	mux.HandleFunc("/api/rooms/close", adminMiddleware(handleCloseRoom))
 	mux.HandleFunc("/api/events", handleEvents) // We'll handle role check inside here for GET/POST mix
+	mux.HandleFunc("/api/events/register", authMiddleware(handleEventRegister))
+	mux.HandleFunc("/api/events/registrations", authMiddleware(handleEventRegistrations))
+	mux.HandleFunc("/api/events/checkin", adminMiddleware(handleEventCheckIn))
+	mux.HandleFunc("/api/profile", authMiddleware(handleProfile))
+	mux.HandleFunc("/api/groups", authMiddleware(handleGroups))
 	mux.HandleFunc("/ws", handleWebSocket)
 
 	// Simple CORS wrapper
