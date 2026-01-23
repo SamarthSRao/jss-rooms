@@ -40,8 +40,10 @@ func initDB() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	db.AutoMigrate(&User{}, &Room{}, &Message{}, &Event{})
 	DB = db
+	if err := db.AutoMigrate(&User{}, &Room{}, &Message{}, &Event{}, &Activity{}, &ActivityRegistration{}); err != nil {
+		log.Printf("Migration Failed: %v", err)
+	}
 	fmt.Println("Database migrated successfully")
 }
 
@@ -122,6 +124,8 @@ func main() {
 	mux.HandleFunc("/api/events/checkin", adminMiddleware(handleEventCheckIn))
 	mux.HandleFunc("/api/profile", authMiddleware(handleProfile))
 	mux.HandleFunc("/api/groups", authMiddleware(handleGroups))
+	mux.HandleFunc("/api/activities", handleActivities)
+	mux.HandleFunc("/api/activities/register", authMiddleware(handleActivityRegister))
 	mux.HandleFunc("/ws", handleWebSocket)
 
 	// Simple CORS wrapper

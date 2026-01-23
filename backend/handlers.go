@@ -270,7 +270,7 @@ func handleProfile(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 		var user User
-		if err := DB.Preload("Group").First(&user, "id = ?", userID).Error; err != nil {
+		if err := DB.Preload("Group").Preload("ActivityRegistrations.Activity").First(&user, "id = ?", userID).Error; err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
@@ -429,6 +429,78 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 		Status:      "checked_in",
 		CheckedInAt: &now,
 	})
+
+	json.NewEncoder(w).Encode(reg)
+}
+
+func handleActivities(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		var activities []Activity
+		DB.Order("start_time asc").Find(&activities)
+		json.NewEncoder(w).Encode(activities)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		if getRoleFromToken(r) != "admin" {
+			http.Error(w, "Forbidden: Only admins can post activities", http.StatusForbidden)
+			return
+		}
+
+		var activity Activity
+		if err := json.NewDecoder(r.Body).Decode(&activity); err != nil {
+			http.Error(w, "Invalid input", http.StatusBadRequest)
+			return
+		}
+		DB.Create(&activity)
+		json.NewEncoder(w).Encode(activity)
+	}
+}
+
+func handleActivityRegister(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := getUserIDFromToken(r)
+	if userID == uuid.Nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var input struct {
+		ActivityID uuid.UUID `json:"activity_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Double check user exists to get USN
+	var user User
+	if err := DB.First(&user, "id = ?", userID).Error; err != nil {
+		http.Error(w, "User not found", http.StatusBadRequest)
+		return
+	}
+
+	// Check if already registered
+	var existing ActivityRegistration
+	if err := DB.Where("activity_id = ? AND user_id = ?", input.ActivityID, userID).First(&existing).Error; err == nil {
+		http.Error(w, "Already registered for this activity", http.StatusConflict)
+		return
+	}
+
+	reg := ActivityRegistration{
+		ActivityID: input.ActivityID,
+		UserID:     userID,
+		UserUSN:    user.USN,
+		Status:     "registered",
+	}
+	if err := DB.Create(&reg).Error; err != nil {
+		http.Error(w, "Registration failed", http.StatusInternalServerError)
+		return
+	}
 
 	json.NewEncoder(w).Encode(reg)
 }

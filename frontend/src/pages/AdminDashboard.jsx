@@ -8,12 +8,14 @@ const AdminDashboard = ({ user }) => {
     const [rooms, setRooms] = useState([]);
     const [events, setEvents] = useState([]);
     const [groups, setGroups] = useState([]);
+    const [activities, setActivities] = useState([]);
     const [registrations, setRegistrations] = useState({});
 
     // Form states
     const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
     const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0 });
     const [groupForm, setGroupForm] = useState({ name: '', description: '' });
+    const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '' });
 
     useEffect(() => {
         fetchData();
@@ -21,14 +23,16 @@ const AdminDashboard = ({ user }) => {
 
     const fetchData = async () => {
         const token = localStorage.getItem('token');
-        const [roomsRes, eventsRes, groupsRes] = await Promise.all([
+        const [roomsRes, eventsRes, groupsRes, activitiesRes] = await Promise.all([
             axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`, { headers: { Authorization: token } }),
             axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/events`),
-            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/groups`, { headers: { Authorization: token } })
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/groups`, { headers: { Authorization: token } }),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/activities`)
         ]);
         setRooms(roomsRes.data || []);
         setEvents(eventsRes.data || []);
         setGroups(groupsRes.data || []);
+        setActivities(activitiesRes.data || []);
 
         // Fetch registrations for each event
         const regs = {};
@@ -56,6 +60,27 @@ const AdminDashboard = ({ user }) => {
         const token = localStorage.getItem('token');
         await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/groups`, groupForm, { headers: { Authorization: token } });
         setGroupForm({ name: '', description: '' });
+        fetchData();
+    };
+
+    const createActivity = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        const payload = {
+            ...activityForm,
+            start_time: new Date(activityForm.start_time).toISOString(),
+            end_time: new Date(activityForm.start_time).toISOString()
+        };
+        // Remove event_id if it's an empty string to avoid UUID parsing errors on backend
+        if (!payload.event_id) {
+            delete payload.event_id;
+        }
+
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/activities`,
+            payload,
+            { headers: { Authorization: token } }
+        );
+        setActivityForm({ title: '', description: '', location: '', start_time: '', image_url: '' });
         fetchData();
     };
 
@@ -111,6 +136,13 @@ const AdminDashboard = ({ user }) => {
                     style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'events' ? 'var(--white)' : 'var(--black)', color: activeTab === 'events' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
                 >
                     "EVENTS"
+                </button>
+                <button
+                    onClick={() => setActiveTab('activities')}
+                    className={`caps ${activeTab === 'activities' ? '' : 'opacity-60'}`}
+                    style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'activities' ? 'var(--white)' : 'var(--black)', color: activeTab === 'activities' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
+                >
+                    "ACTIVITIES"
                 </button>
                 <button
                     onClick={() => setActiveTab('groups')}
@@ -244,6 +276,70 @@ const AdminDashboard = ({ user }) => {
                                     <div className="flex gap-2">
                                         <div className="tag-zip">{event.category}</div>
                                         <button onClick={() => window.location.href = '/admin/checkin'} className="btn-industrial" style={{ padding: '4px 8px', fontSize: '8px' }}>"SCAN"</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {activeTab === 'activities' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                        <div className="card-metadata">SRC: NEW_ENTRY</div>
+                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"POST_ACTIVITY"</h3>
+                        <form onSubmit={createActivity} style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="input-wrapper">
+                                <label className="input-label">"PARENT_EVENT"</label>
+                                <select
+                                    className="input-industrial"
+                                    value={activityForm.event_id || ''}
+                                    onChange={e => setActivityForm({ ...activityForm, event_id: e.target.value })}
+                                    style={{ appearance: 'none' }}
+                                >
+                                    <option value="">-- SELECT EVENT --</option>
+                                    {events.map(ev => (
+                                        <option key={ev.id} value={ev.id}>{ev.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"TITLE"</label>
+                                <input className="input-industrial" value={activityForm.title} onChange={e => setActivityForm({ ...activityForm, title: e.target.value })} required />
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"LOCATION"</label>
+                                <input className="input-industrial" value={activityForm.location} onChange={e => setActivityForm({ ...activityForm, location: e.target.value })} />
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"DATE & TIME"</label>
+                                <input type="datetime-local" className="input-industrial" value={activityForm.start_time} onChange={e => setActivityForm({ ...activityForm, start_time: e.target.value })} required />
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"IMAGE_URL"</label>
+                                <input className="input-industrial" value={activityForm.image_url} onChange={e => setActivityForm({ ...activityForm, image_url: e.target.value })} placeholder="https://..." />
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"DESCRIPTION"</label>
+                                <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={activityForm.description} onChange={e => setActivityForm({ ...activityForm, description: e.target.value })} />
+                            </div>
+                            <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"POST_ACTIVITY"</button>
+                        </form>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                        <div className="card-metadata">SRC: DATABASE</div>
+                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_ACTIVITIES"</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                            {activities.map(activity => (
+                                <div key={activity.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{activity.title}</div>
+                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>{new Date(activity.start_time).toLocaleString()}</div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <div className="tag-zip">ACTIVITY</div>
                                     </div>
                                 </div>
                             ))}

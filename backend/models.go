@@ -10,15 +10,16 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	USN          string     `gorm:"uniqueIndex;not null" json:"usn"`
-	Name         string     `json:"name"`
-	Bio          string     `json:"bio"`
-	Role         string     `gorm:"default:'user'" json:"role"` // 'admin' or 'user'
-	GroupID      *uuid.UUID `gorm:"type:uuid" json:"group_id"`
-	Group        *Group     `gorm:"foreignKey:GroupID" json:"group,omitempty"`
-	ProfileImage string     `json:"profile_image"`
-	CreatedAt    time.Time  `json:"created_at"`
+	ID                    uuid.UUID              `gorm:"type:uuid;primaryKey" json:"id"`
+	USN                   string                 `gorm:"uniqueIndex;not null" json:"usn"`
+	Name                  string                 `json:"name"`
+	Bio                   string                 `json:"bio"`
+	Role                  string                 `gorm:"default:'user'" json:"role"` // 'admin' or 'user'
+	GroupID               *uuid.UUID             `gorm:"type:uuid" json:"group_id"`
+	Group                 *Group                 `gorm:"foreignKey:GroupID" json:"group,omitempty"`
+	ProfileImage          string                 `json:"profile_image"`
+	CreatedAt             time.Time              `json:"created_at"`
+	ActivityRegistrations []ActivityRegistration `json:"activity_registrations,omitempty"`
 }
 
 type Group struct {
@@ -72,6 +73,28 @@ type Registration struct {
 	CreatedAt   time.Time  `json:"created_at"`
 }
 
+type Activity struct {
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	EventID     uuid.UUID `gorm:"type:uuid;index" json:"event_id"` // Optional: link to a parent event
+	Title       string    `gorm:"not null" json:"title"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"image_url"`
+	Location    string    `json:"location"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type ActivityRegistration struct {
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	ActivityID  uuid.UUID `gorm:"type:uuid;index" json:"activity_id"`
+	Activity    *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
+	UserID      uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
+	UserUSN     string    `json:"user_usn"`
+	Status      string    `gorm:"default:'registered'" json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.ID = uuid.New()
 	return
@@ -100,5 +123,15 @@ func (e *Event) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (reg *Registration) BeforeCreate(tx *gorm.DB) (err error) {
 	reg.ID = uuid.New()
+	return
+}
+
+func (a *Activity) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.New()
+	return
+}
+
+func (ar *ActivityRegistration) BeforeCreate(tx *gorm.DB) (err error) {
+	ar.ID = uuid.New()
 	return
 }

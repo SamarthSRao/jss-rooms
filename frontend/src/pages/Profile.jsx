@@ -177,6 +177,31 @@ const Profile = ({ user, setUser }) => {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* REGISTERED ACTIVITIES SECTION */}
+                                {profile?.activity_registrations && profile.activity_registrations.length > 0 && (
+                                    <div className="pt-8 border-t border-dashed border-zinc-800">
+                                        <label className="input-label flex items-center gap-2 mb-4">
+                                            <Activity size={14} /> "REGISTERED_ACTIVITIES"
+                                        </label>
+                                        <div className="space-y-4">
+                                            {profile.activity_registrations.map(reg => (
+                                                <div key={reg.id} className="bg-zinc-900 border border-white/10 p-4 flex justify-between items-center">
+                                                    <div>
+                                                        <h4 className="caps font-bold">{reg.activity?.title || 'Unknown Activity'}</h4>
+                                                        <div className="monospaced text-[10px] opacity-50 flex items-center gap-2 mt-1">
+                                                            <span>REF: {reg.activity_id.substring(0, 8)}</span>
+                                                            <span>//</span>
+                                                            <span className={reg.status === 'registered' ? 'text-green-500' : 'text-zinc-500'}>
+                                                                {reg.status.toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ marginTop: '40px', width: '100%' }}>
