@@ -110,15 +110,15 @@ const EventDetails = ({ user }) => {
                 </header>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '48px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                    <div className="responsive-grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
                         {/* Main Event Content */}
-                        <div style={{ gridColumn: 'span 2' }}>
+                        <div className="responsive-main-col" style={{ gridColumn: 'span 2' }}>
                             <div style={{
                                 border: '1px solid rgba(255,255,255,0.2)',
                                 overflow: 'hidden',
                                 borderBottom: '8px solid #fff'
                             }}>
-                                <div style={{
+                                <div className="responsive-hero-section" style={{
                                     height: '400px',
                                     width: '100%',
                                     position: 'relative',
@@ -144,7 +144,7 @@ const EventDetails = ({ user }) => {
                                         </>
                                     )}
 
-                                    <div style={{
+                                    <div className="responsive-hero-padding" style={{
                                         position: 'absolute',
                                         bottom: 0,
                                         left: 0,
@@ -162,7 +162,7 @@ const EventDetails = ({ user }) => {
                                             display: 'inline-block',
                                             marginBottom: '16px'
                                         }}>{event.category}</span>
-                                        <h1 style={{
+                                        <h1 className="responsive-title" style={{
                                             fontSize: '3.5rem',
                                             letterSpacing: '-0.04em',
                                             lineHeight: 0.9,
@@ -174,8 +174,8 @@ const EventDetails = ({ user }) => {
                                     </div>
                                 </div>
 
-                                <div style={{ padding: '60px' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '48px', marginBottom: '64px' }}>
+                                <div className="responsive-content" style={{ padding: '60px' }}>
+                                    <div className="responsive-meta-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '48px', marginBottom: '64px' }}>
                                         <div>
                                             <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase', fontFamily: 'monospace' }}>WHEN</div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
@@ -226,7 +226,7 @@ const EventDetails = ({ user }) => {
                         {/* Registration Sidecard */}
                         <div>
                             <div style={{ position: 'sticky', top: '48px' }}>
-                                <div style={{
+                                <div className="responsive-sidecard" style={{
                                     border: '1px solid rgba(255,255,255,0.2)',
                                     padding: '48px',
                                     textAlign: 'center',
@@ -367,14 +367,44 @@ const EventDetails = ({ user }) => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <style>{`
+                <style>{`
                 @keyframes pulse {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.5; }
                 }
+
+                @media (max-width: 768px) {
+                    .responsive-grid-container {
+                        display: flex !important;
+                        flex-direction: column;
+                        gap: 32px !important;
+                    }
+                    .responsive-main-col {
+                        grid-column: auto !important;
+                    }
+                    .responsive-hero-section {
+                        height: 250px !important;
+                    }
+                    .responsive-hero-padding {
+                        padding: 24px !important;
+                    }
+                    .responsive-title {
+                        font-size: 2rem !important;
+                    }
+                    .responsive-content {
+                        padding: 24px !important;
+                    }
+                    .responsive-meta-grid {
+                        gap: 24px !important;
+                        margin-bottom: 32px !important;
+                    }
+                    .responsive-sidecard {
+                        padding: 24px !important;
+                    }
+                }
             `}</style>
+            </div>
         </div>
     );
 };
