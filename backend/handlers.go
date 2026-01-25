@@ -106,8 +106,10 @@ func getRoleFromToken(r *http.Request) string {
 
 func handleRooms(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
+		log.Println("GET /api/rooms called")
 		var rooms []Room
 		DB.Where("is_closed = ?", false).Order("created_at desc").Find(&rooms)
+		log.Printf("Found %d rooms", len(rooms))
 		json.NewEncoder(w).Encode(rooms)
 		return
 	}
@@ -203,6 +205,14 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		Conn: conn,
 		Send: make(chan []byte, 256),
 		Room: roomID,
+	}
+
+	// Fetch recent history
+	var history []Message
+	DB.Where("room_id = ?", roomID).Order("created_at asc").Limit(100).Find(&history)
+	for _, msg := range history {
+		msgBytes, _ := json.Marshal(msg)
+		client.Conn.WriteMessage(websocket.TextMessage, msgBytes)
 	}
 
 	hub.Register <- client

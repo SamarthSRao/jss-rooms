@@ -116,7 +116,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/login", handleLogin)
 	mux.HandleFunc("/api/register", handleRegister)
-	mux.HandleFunc("/api/rooms", authMiddleware(handleRooms))
+	mux.HandleFunc("/api/rooms", handleRooms)
 	mux.HandleFunc("/api/rooms/close", adminMiddleware(handleCloseRoom))
 	mux.HandleFunc("/api/events", handleEvents) // We'll handle role check inside here for GET/POST mix
 	mux.HandleFunc("/api/events/register", authMiddleware(handleEventRegister))
