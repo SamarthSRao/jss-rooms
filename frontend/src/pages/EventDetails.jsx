@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Calendar, Users, ArrowLeft, CheckCircle, QrCode, Shield, Info, Clock, Ticket } from 'lucide-react';
+import { MapPin, Calendar, Users, ArrowLeft, Shield, Ticket } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -35,11 +34,13 @@ const EventDetails = ({ user }) => {
     const checkRegistration = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_BASE_URL}/events/registrations`, {
-                headers: { Authorization: token }
-            });
-            const reg = response.data.find(r => r.event_id === id);
-            setRegistration(reg);
+            if (token) {
+                const response = await axios.get(`${API_BASE_URL}/events/registrations`, {
+                    headers: { Authorization: token }
+                });
+                const reg = response.data.find(r => r.event_id === id);
+                setRegistration(reg);
+            }
         } catch (err) {
             console.error('Error checking registration', err);
         }
@@ -61,159 +62,318 @@ const EventDetails = ({ user }) => {
     };
 
     if (loading) return (
-        <div className="flex h-screen bg-black items-center justify-center monospaced caps animate-pulse">
-            LOADING_EVENT...
+        <div style={{ background: '#000', color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
+            LOADING...
         </div>
     );
 
     if (!event) return (
-        <div className="container py-20 text-center">
-            <h1 className="caps text-3xl mb-8">EVENT_NOT_FOUND</h1>
-            <button onClick={() => navigate('/explore')} className="btn-industrial">"BACK_TO_EXPLORE"</button>
+        <div style={{ background: '#000', color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px' }}>
+            <h1 style={{ fontSize: '2rem', textTransform: 'uppercase' }}>EVENT_NOT_FOUND</h1>
+            <button onClick={() => navigate('/explore')} style={{ background: '#fff', color: '#000', border: 'none', padding: '10px 20px', cursor: 'pointer', fontWeight: 'bold' }}>BACK TO EXPLORE</button>
         </div>
     );
 
+    const isRegistered = !!registration;
+
     return (
-        <div className="container fade-in">
-            <header style={{ marginBottom: '40px' }}>
-                <button onClick={() => navigate(-1)} className="btn-industrial flex items-center gap-2 mb-8" style={{ padding: '8px 16px' }}>
-                    <ArrowLeft size={14} /> "BACK"
-                </button>
-                <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2, marginBottom: '20px' }}></div>
-            </header>
+        <div style={{
+            background: '#000',
+            color: '#fff',
+            minHeight: '100vh',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+            padding: '40px 20px'
+        }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                <header style={{ marginBottom: '40px' }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            color: '#fff',
+                            padding: '8px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            marginBottom: '20px'
+                        }}
+                    >
+                        <ArrowLeft size={14} /> "BACK"
+                    </button>
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                </header>
 
-            <div className="grid lg:grid-cols-3 gap-12">
-                {/* Main Event Content */}
-                <div className="lg:col-span-2">
-                    <div className="card-industrial" style={{ padding: '0', overflow: 'hidden', borderBottom: '8px solid var(--white)' }}>
-                        <div style={{ height: '480px', width: '100%', position: 'relative', background: '#0a0a0a' }}>
-                            {event.image_url ? (
-                                <img src={event.image_url} alt="" className="w-full h-full object-cover opacity-80" />
-                            ) : (
-                                <div className="cross-hatch w-full h-full flex items-center justify-center opacity-10">
-                                    <Ticket size={120} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '48px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                        {/* Main Event Content */}
+                        <div style={{ gridColumn: 'span 2' }}>
+                            <div style={{
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                overflow: 'hidden',
+                                borderBottom: '8px solid #fff'
+                            }}>
+                                <div style={{
+                                    height: '400px',
+                                    width: '100%',
+                                    position: 'relative',
+                                    background: '#0a0a0a',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {event.image_url ? (
+                                        <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectCover: 'cover', opacity: 0.5, position: 'absolute' }} />
+                                    ) : (
+                                        <>
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)',
+                                                opacity: 0.3
+                                            }}></div>
+                                            <Ticket size={120} style={{ opacity: 0.1 }} />
+                                        </>
+                                    )}
+
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        padding: '48px',
+                                        background: 'linear-gradient(to top, #000, rgba(0,0,0,0.8), transparent)'
+                                    }}>
+                                        <span style={{
+                                            background: '#fff',
+                                            color: '#000',
+                                            padding: '4px 12px',
+                                            fontSize: '10px',
+                                            fontWeight: '900',
+                                            letterSpacing: '0.15em',
+                                            display: 'inline-block',
+                                            marginBottom: '16px'
+                                        }}>{event.category}</span>
+                                        <h1 style={{
+                                            fontSize: '3.5rem',
+                                            letterSpacing: '-0.04em',
+                                            lineHeight: 0.9,
+                                            fontWeight: '900',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            "{event.title}"
+                                        </h1>
+                                    </div>
                                 </div>
-                            )}
-                            <div className="absolute bottom-0 left-0 w-full p-12 bg-gradient-to-t from-black via-black/50 to-transparent">
-                                <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', marginBottom: '16px' }}>{event.category.toUpperCase()}</span>
-                                <h1 className="caps" style={{ fontSize: '4rem', letterSpacing: '-0.04em', lineHeight: 0.9, fontWeight: '900' }}>
-                                    "{event.title}"
-                                </h1>
-                            </div>
-                        </div>
 
-                        <div style={{ padding: '60px' }}>
-                            <div className="grid md:grid-cols-2 gap-12 mb-16">
-                                <div className="space-y-4">
-                                    <div className="monospaced text-[9px] opacity-40 caps tracking-widest">WHEN</div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="p-4 border border-white/20 bg-white/5">
-                                            <Calendar className="text-white" size={24} />
+                                <div style={{ padding: '60px' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '48px', marginBottom: '64px' }}>
+                                        <div>
+                                            <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase', fontFamily: 'monospace' }}>WHEN</div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                                                <div style={{ padding: '16px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)' }}>
+                                                    <Calendar size={24} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                        {new Date(event.event_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+                                                    </div>
+                                                    <div style={{ fontSize: '12px', opacity: 0.6, fontFamily: 'monospace' }}>
+                                                        {new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div>
-                                            <div className="caps font-black text-xl">{new Date(event.event_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</div>
-                                            <div className="monospaced text-[12px] opacity-60">{new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</div>
+                                            <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase', fontFamily: 'monospace' }}>WHERE</div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                                                <div style={{ padding: '16px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)' }}>
+                                                    <MapPin size={24} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase' }}>{event.location}</div>
+                                                    <div style={{ fontSize: '12px', opacity: 0.6, fontFamily: 'monospace' }}>JSS_SECURE_ZONE</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div>
+                                        <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.2em', marginBottom: '24px', textTransform: 'uppercase', fontFamily: 'monospace' }}>ABOUT</div>
+                                        <p style={{
+                                            opacity: 0.8,
+                                            lineHeight: 1.8,
+                                            fontSize: '18px',
+                                            borderLeft: '2px solid #fff',
+                                            paddingLeft: '32px',
+                                            margin: 0
+                                        }}>
+                                            {event.description}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="monospaced text-[9px] opacity-40 caps tracking-widest">WHERE</div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="p-4 border border-white/20 bg-white/5">
-                                            <MapPin className="text-white" size={24} />
-                                        </div>
+                            </div>
+                        </div>
+
+                        {/* Registration Sidecard */}
+                        <div>
+                            <div style={{ position: 'sticky', top: '48px' }}>
+                                <div style={{
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    padding: '48px',
+                                    textAlign: 'center',
+                                    marginBottom: '32px'
+                                }}>
+                                    <div style={{
+                                        fontSize: '9px',
+                                        opacity: 0.4,
+                                        letterSpacing: '0.2em',
+                                        marginBottom: '32px',
+                                        fontFamily: 'monospace'
+                                    }}>
+                                        ID: {isRegistered ? 'CONFIRMED' : 'WAITING'}
+                                    </div>
+
+                                    {!isRegistered ? (
+                                        <>
+                                            <h3 style={{ fontSize: '24px', marginBottom: '48px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                "GET_ACCESS"
+                                            </h3>
+                                            <div style={{ marginBottom: '64px', textAlign: 'left' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '32px' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.15em', fontFamily: 'monospace', marginBottom: '8px' }}>CAPACITY</div>
+                                                        <div style={{ fontWeight: '700', textTransform: 'uppercase' }}>{event.capacity}</div>
+                                                    </div>
+                                                    <Users size={20} style={{ opacity: 0.2 }} />
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.15em', fontFamily: 'monospace', marginBottom: '8px' }}>STATUS</div>
+                                                        <div style={{ fontWeight: '700', textTransform: 'uppercase', color: '#22c55e' }}>AVAILABLE</div>
+                                                    </div>
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite' }}></div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={handleRegister}
+                                                disabled={registering}
+                                                style={{
+                                                    background: '#fff',
+                                                    color: '#000',
+                                                    border: 'none',
+                                                    padding: '24px',
+                                                    width: '100%',
+                                                    fontSize: '18px',
+                                                    fontWeight: '900',
+                                                    textTransform: 'uppercase',
+                                                    cursor: registering ? 'not-allowed' : 'pointer',
+                                                    opacity: registering ? 0.6 : 1
+                                                }}
+                                            >
+                                                {registering ? '...WAIT' : '"REGISTER NOW"'}
+                                            </button>
+                                        </>
+                                    ) : (
                                         <div>
-                                            <div className="caps font-black text-xl">{event.location || 'CAMPUS_GROUNDS'}</div>
-                                            <div className="monospaced text-[12px] opacity-60">JSS_SECURE_ZONE</div>
+                                            <div style={{
+                                                background: '#facc15',
+                                                color: '#000',
+                                                padding: '4px 12px',
+                                                fontSize: '12px',
+                                                fontWeight: '900',
+                                                letterSpacing: '0.15em',
+                                                display: 'inline-block',
+                                                marginBottom: '40px'
+                                            }}>AUTHORIZED</div>
+                                            <h3 style={{ fontSize: '24px', marginBottom: '48px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                "ACCESS_TOKEN"
+                                            </h3>
+
+                                            <div style={{
+                                                background: '#fff',
+                                                padding: '16px',
+                                                display: 'inline-block',
+                                                marginBottom: '40px',
+                                                boxShadow: '0 0 40px -10px rgba(255,255,255,0.3)'
+                                            }}>
+                                                <div style={{
+                                                    width: '220px',
+                                                    height: '220px',
+                                                    background: '#000',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '10px',
+                                                    color: '#fff',
+                                                    textAlign: 'center',
+                                                    padding: '0',
+                                                    fontFamily: 'monospace',
+                                                    wordBreak: 'break-all'
+                                                }}>
+                                                    <QRCodeSVG
+                                                        value={registration.qr_code_token}
+                                                        size={200}
+                                                        level="H"
+                                                        includeMargin={true}
+                                                        bgColor="#000000"
+                                                        fgColor="#FFFFFF"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div style={{
+                                                fontSize: '10px',
+                                                opacity: 0.4,
+                                                marginBottom: '40px',
+                                                textAlign: 'left',
+                                                borderLeft: '1px solid rgba(255,255,255,0.2)',
+                                                paddingLeft: '16px',
+                                                paddingTop: '8px',
+                                                paddingBottom: '8px',
+                                                fontFamily: 'monospace'
+                                            }}>
+                                                USER: {user?.usn || 'UNKNOWN'}<br />
+                                                ISSUED: {new Date(registration.CreatedAt).toLocaleDateString()}<br />
+                                                QTK: {registration.qr_code_token.substring(0, 15)}...
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', color: '#22c55e', fontSize: '12px', fontWeight: '900', fontFamily: 'monospace' }}>
+                                                <Shield size={16} /> SECURITY_VALIDATED
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+
+                                <div style={{
+                                    padding: '32px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    fontFamily: 'monospace',
+                                    fontSize: '9px',
+                                    lineHeight: 1.6,
+                                    opacity: 0.4
+                                }}>
+                                    BY REGISTERING, YOU AGREE TO FOLLOW ALL CAMPUS PROTOCOLS AT THE VENUE. ENTRY IS SUBJECT TO CAPACITY LIMITS EVEN WITH A TOKEN.
                                 </div>
                             </div>
-
-                            <div className="space-y-6">
-                                <div className="monospaced text-[9px] opacity-40 caps tracking-widest">ABOUT</div>
-                                <p className="opacity-80 leading-relaxed text-xl font-medium" style={{ borderLeft: '2px solid var(--white)', paddingLeft: '32px' }}>
-                                    {event.description || 'No detailed description available for this community event.'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Registration Sidecard */}
-                <div className="lg:col-span-1">
-                    <div className="sticky top-12 space-y-8">
-                        <div className="card-industrial" style={{ padding: '48px', textAlign: 'center' }}>
-                            <div className="card-metadata">ID: {registration ? 'CONFIRMED' : 'WAITING'}</div>
-
-                            {!registration ? (
-                                <>
-                                    <h3 className="caps text-2xl mb-12 font-black">"GET_ACCESS"</h3>
-                                    <div className="space-y-8 mb-16 text-left">
-                                        <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                                            <div>
-                                                <div className="monospaced text-[9px] opacity-40 caps">CAPACITY</div>
-                                                <div className="caps font-bold">{event.capacity || 'UNLIMITED'}</div>
-                                            </div>
-                                            <Users size={20} className="opacity-20" />
-                                        </div>
-                                        <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                                            <div>
-                                                <div className="monospaced text-[9px] opacity-40 caps">STATUS</div>
-                                                <div className="caps font-bold text-green-500">AVAILABLE</div>
-                                            </div>
-                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={handleRegister}
-                                        disabled={registering}
-                                        className="btn-industrial w-full justify-center bg-white text-black py-6 text-xl hover:bg-zinc-200 transition-colors"
-                                        style={{ fontWeight: '900' }}
-                                    >
-                                        {registering ? '...WAIT' : '"REGISTER NOW"'}
-                                    </button>
-                                </>
-                            ) : (
-                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <div className="tag-zip" style={{ background: 'var(--safety-yellow)', color: 'black', marginBottom: '40px', fontSize: '12px' }}>AUTHORIZED</div>
-                                    <h3 className="caps text-2xl mb-12 font-black">"ACCESS_TOKEN"</h3>
-
-                                    <div className="bg-white p-4 inline-block mb-10 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
-                                        <QRCodeSVG
-                                            value={registration.qr_code_token}
-                                            size={220}
-                                            level="H"
-                                            includeMargin={false}
-                                        />
-                                    </div>
-
-                                    <div className="monospaced text-[10px] opacity-40 mb-10 text-left border-l border-white/20 pl-4 py-2">
-                                        USER: {user.usn}<br />
-                                        ISSUED: {new Date(registration.CreatedAt).toLocaleDateString()}<br />
-                                        STAMP: {new Date(registration.CreatedAt).getTime()}
-                                    </div>
-
-                                    <div className="flex items-center gap-3 justify-center text-green-500 monospaced text-xs font-black">
-                                        <Shield size={16} /> SECURITY_VALIDATED
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="p-8 border border-white/10 monospaced text-[9px] leading-relaxed opacity-40">
-                            BY REGISTERING, YOU AGREE TO FOLLOW ALL CAMPUS PROTOCOLS AT THE VENUE. ENTRY IS SUBJECT TO CAPACITY LIMITS EVEN WITH A TOKEN.
                         </div>
                     </div>
                 </div>
             </div>
 
             <style>{`
-                @keyframes slideIn {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
                 }
-                .fade-in { animation: slideIn 0.8s ease-out forwards; }
             `}</style>
         </div>
     );
