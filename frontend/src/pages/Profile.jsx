@@ -146,6 +146,19 @@ const Profile = ({ user, setUser }) => {
                                     )}
                                 </div>
 
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <div className="border border-zinc-800 p-4 bg-black/20 text-center relative group hover:border-white/40 transition-colors">
+                                        <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-zinc-800 group-hover:bg-safety-orange transition-colors"></div>
+                                        <div className="monospaced text-[10px] opacity-50 mb-1">EVENTS_REGISTERED</div>
+                                        <div className="text-4xl font-black leading-none">{profile?.activity_registrations?.length || 0}</div>
+                                    </div>
+                                    <div className="border border-zinc-800 p-4 bg-black/20 text-center relative group hover:border-white/40 transition-colors">
+                                        <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-zinc-800 group-hover:bg-safety-orange transition-colors"></div>
+                                        <div className="monospaced text-[10px] opacity-50 mb-1">GROUPS_JOINED</div>
+                                        <div className="text-4xl font-black leading-none">{profile?.group_id ? 1 : 0}</div>
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-8">
                                     <div>
                                         <label className="input-label">"ROLE"</label>
@@ -181,20 +194,42 @@ const Profile = ({ user, setUser }) => {
                                 {/* REGISTERED ACTIVITIES SECTION */}
                                 {profile?.activity_registrations && profile.activity_registrations.length > 0 && (
                                     <div className="pt-8 border-t border-dashed border-zinc-800">
-                                        <label className="input-label flex items-center gap-2 mb-4">
-                                            <Activity size={14} /> "REGISTERED_ACTIVITIES"
-                                        </label>
-                                        <div className="space-y-4">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <label className="input-label flex items-center gap-2 mb-0">
+                                                <Activity size={14} /> "REGISTERED_ACTIVITIES"
+                                            </label>
+                                            <div className="monospaced text-[10px] opacity-40">
+                                                TOTAL: {profile.activity_registrations.length}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
                                             {profile.activity_registrations.map(reg => (
-                                                <div key={reg.id} className="bg-zinc-900 border border-white/10 p-4 flex justify-between items-center">
-                                                    <div>
-                                                        <h4 className="caps font-bold">{reg.activity?.title || 'Unknown Activity'}</h4>
-                                                        <div className="monospaced text-[10px] opacity-50 flex items-center gap-2 mt-1">
-                                                            <span>REF: {reg.activity_id.substring(0, 8)}</span>
-                                                            <span>//</span>
-                                                            <span className={reg.status === 'registered' ? 'text-green-500' : 'text-zinc-500'}>
-                                                                {reg.status.toUpperCase()}
-                                                            </span>
+                                                <div key={reg.id} className="group bg-zinc-900/30 border border-white/5 p-4 hover:border-white/30 hover:bg-zinc-900 transition-all duration-300 relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 w-0 h-0 border-t-[20px] border-r-[20px] border-t-transparent border-r-white/5 group-hover:border-r-safety-orange transition-colors"></div>
+
+                                                    <div className="flex justify-between items-start gap-4">
+                                                        <div className="flex-1">
+                                                            <h4 className="caps font-bold text-lg leading-tight mb-1 group-hover:text-white transition-colors text-white/90">
+                                                                {reg.activity?.title || 'Unknown Activity'}
+                                                            </h4>
+                                                            <div className="flex items-center gap-3 mt-2">
+                                                                <div className="monospaced text-[9px] opacity-40 px-1 border border-white/20">
+                                                                    ID: {reg.activity_id.substring(0, 6)}
+                                                                </div>
+                                                                {reg.activity?.location && (
+                                                                    <div className="monospaced text-[9px] opacity-60 flex items-center gap-1">
+                                                                        <MapPin size={8} /> {reg.activity.location}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={`monospaced text-[9px] font-bold px-2 py-1 border ${reg.status === 'registered'
+                                                                ? 'border-green-900/50 bg-green-900/10 text-green-500'
+                                                                : 'border-zinc-800 bg-zinc-900 text-zinc-500'
+                                                            }`}>
+                                                            {reg.status?.toUpperCase()}
                                                         </div>
                                                     </div>
                                                 </div>
