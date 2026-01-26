@@ -108,7 +108,7 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		log.Println("GET /api/rooms called")
 		var rooms []Room
-		DB.Where("is_closed = ?", false).Order("created_at desc").Find(&rooms)
+		DB.Where("is_closed = ? AND expires_at > ?", false, time.Now()).Order("created_at desc").Find(&rooms)
 		log.Printf("Found %d rooms", len(rooms))
 		json.NewEncoder(w).Encode(rooms)
 		return
@@ -193,6 +193,21 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	userUSN := r.URL.Query().Get("usn")
 	userIDStr := r.URL.Query().Get("userId")
 	userID, _ := uuid.Parse(userIDStr)
+
+	// Validate room existence and expiration
+	var room Room
+	if err := DB.First(&room, "id = ?", roomID).Error; err != nil {
+		http.Error(w, "Room not found", http.StatusNotFound)
+		return
+	}
+	if room.IsClosed {
+		http.Error(w, "Room is closed", http.StatusGone) // 410 Gone
+		return
+	}
+	if time.Now().After(room.ExpiresAt) {
+		http.Error(w, "Room has expired", http.StatusGone)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

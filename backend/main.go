@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
@@ -110,6 +111,7 @@ var hub *Hub
 
 func main() {
 	initDB()
+	go startRoomCleanupTicker()
 	hub = newHub()
 	go hub.run()
 
@@ -148,6 +150,20 @@ func main() {
 
 	fmt.Printf("Server starting on port %s...\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, handler))
+}
+
+func startRoomCleanupTicker() {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		result := DB.Model(&Room{}).Where("is_closed = ? AND expires_at < ?", false, time.Now()).Update("is_closed", true)
+		if result.Error != nil {
+			log.Printf("Error closing expired rooms: %v", result.Error)
+		} else if result.RowsAffected > 0 {
+			log.Printf("Closed %d expired rooms", result.RowsAffected)
+		}
+	}
 }
 
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
