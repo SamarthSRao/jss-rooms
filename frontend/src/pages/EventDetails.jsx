@@ -17,6 +17,15 @@ const EventDetails = ({ user }) => {
     useEffect(() => {
         fetchData();
         checkRegistration();
+
+        const pollInterval = setInterval(() => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                checkRegistration();
+            }
+        }, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(pollInterval);
     }, [id]);
 
     const fetchData = async () => {
@@ -282,6 +291,66 @@ const EventDetails = ({ user }) => {
                                                 {registering ? '...WAIT' : '"REGISTER NOW"'}
                                             </button>
                                         </>
+                                    ) : registration.status === 'checked_in' ? (
+                                        <div>
+                                            <div style={{
+                                                background: '#22c55e',
+                                                color: '#000',
+                                                padding: '4px 12px',
+                                                fontSize: '12px',
+                                                fontWeight: '900',
+                                                letterSpacing: '0.15em',
+                                                display: 'inline-block',
+                                                marginBottom: '40px'
+                                            }}>CONFIRMED</div>
+                                            <h3 style={{ fontSize: '24px', marginBottom: '48px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                "ENTRY_GRANTED"
+                                            </h3>
+
+                                            <div style={{
+                                                background: '#fff',
+                                                padding: '40px 16px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                marginBottom: '40px',
+                                                boxShadow: '0 0 40px -10px rgba(34, 197, 94, 0.3)',
+                                                border: '2px solid #22c55e'
+                                            }}>
+                                                <div style={{
+                                                    width: '80px',
+                                                    height: '80px',
+                                                    borderRadius: '50%',
+                                                    background: '#22c55e',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    marginBottom: '24px'
+                                                }}>
+                                                    <Shield size={40} color="#000" />
+                                                </div>
+                                                <div style={{ color: '#000', fontWeight: '900', fontSize: '18px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                                    CHECKED IN
+                                                </div>
+                                            </div>
+
+                                            <div style={{
+                                                fontSize: '10px',
+                                                opacity: 0.4,
+                                                marginBottom: '40px',
+                                                textAlign: 'left',
+                                                borderLeft: '1px solid rgba(255,255,255,0.2)',
+                                                paddingLeft: '16px',
+                                                paddingTop: '8px',
+                                                paddingBottom: '8px',
+                                                fontFamily: 'monospace'
+                                            }}>
+                                                USER: {user?.usn || 'UNKNOWN'}<br />
+                                                ENTRY_TIME: {registration.checked_in_at ? new Date(registration.checked_in_at).toLocaleTimeString() : 'JUST NOW'}<br />
+                                                STATUS: VERIFIED
+                                            </div>
+                                        </div>
                                     ) : (
                                         <div>
                                             <div style={{
