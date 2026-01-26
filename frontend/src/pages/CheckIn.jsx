@@ -111,9 +111,23 @@ const CheckIn = () => {
                             >
                                 <CheckCircle size={60} className="mb-6 text-white" />
                                 <h2 className="caps text-3xl mb-4 font-black">LOGIN_APPROVED</h2>
-                                <div className="monospaced text-[11px] opacity-60 mb-10 pb-4 border-b border-white/10 w-full max-w-xs">
-                                    USER_ID: {scannedData?.user_id?.substring(0, 16).toUpperCase()}...<br />
-                                    ENTRY_TIME: {new Date().toLocaleTimeString()}
+                                <div className="text-left w-full space-y-2">
+                                    <div>
+                                        <span className="text-[9px] opacity-40 block">STUDENT</span>
+                                        <span className="text-lg font-bold">{scannedData?.user?.name || 'UNKNOWN'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] opacity-40 block">USN</span>
+                                        <span className="text-sm monospaced opacity-80">{scannedData?.user?.usn || 'UNKNOWN'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] opacity-40 block">ACTIVITY</span>
+                                        <span className="text-sm font-bold text-green-400">{scannedData?.event?.title || 'UNKNOWN'}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-6 pt-4 border-t border-white/10 w-full flex justify-between text-[10px] opacity-40 monospaced">
+                                    <span>ENTRY_LOGGED</span>
+                                    <span>{new Date().toLocaleTimeString()}</span>
                                 </div>
                                 <button onClick={resetScanner} className="btn-industrial w-full max-w-xs justify-center bg-white text-black py-4">
                                     "NEXT_ENTRY"

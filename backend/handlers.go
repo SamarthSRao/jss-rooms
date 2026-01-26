@@ -439,7 +439,7 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reg Registration
-	if err := DB.Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err != nil {
+	if err := DB.Preload("User").Preload("Event").Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err != nil {
 		http.Error(w, "Invalid token", http.StatusNotFound)
 		return
 	}

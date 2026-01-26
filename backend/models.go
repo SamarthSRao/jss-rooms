@@ -66,7 +66,9 @@ type Event struct {
 type Registration struct {
 	ID          uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
 	EventID     uuid.UUID  `gorm:"type:uuid;index" json:"event_id"`
+	Event       *Event     `gorm:"foreignKey:EventID" json:"event,omitempty"`
 	UserID      uuid.UUID  `gorm:"type:uuid;index" json:"user_id"`
+	User        *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	QRCodeToken string     `gorm:"uniqueIndex" json:"qr_code_token"`
 	Status      string     `gorm:"default:'registered'" json:"status"` // 'registered', 'checked_in', 'cancelled'
 	CheckedInAt *time.Time `json:"checked_in_at"`
@@ -86,13 +88,13 @@ type Activity struct {
 }
 
 type ActivityRegistration struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	ActivityID  uuid.UUID `gorm:"type:uuid;index" json:"activity_id"`
-	Activity    *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
-	UserID      uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
-	UserUSN     string    `json:"user_usn"`
-	Status      string    `gorm:"default:'registered'" json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	ActivityID uuid.UUID `gorm:"type:uuid;index" json:"activity_id"`
+	Activity   *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
+	UserID     uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
+	UserUSN    string    `json:"user_usn"`
+	Status     string    `gorm:"default:'registered'" json:"status"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
