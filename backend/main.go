@@ -42,7 +42,7 @@ func initDB() {
 	}
 
 	DB = db
-	if err := db.AutoMigrate(&User{}, &Room{}, &Message{}, &Event{}, &Activity{}, &ActivityRegistration{}); err != nil {
+	if err := db.AutoMigrate(&User{}, &Room{}, &Message{}, &Event{}, &Registration{}, &Activity{}, &ActivityRegistration{}); err != nil {
 		log.Printf("Migration Failed: %v", err)
 	}
 	fmt.Println("Database migrated successfully")
