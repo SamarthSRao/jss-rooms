@@ -64,7 +64,7 @@ const Explore = ({ user }) => {
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px' }}>
                     <span className="monospaced" style={{ fontSize: '11px', opacity: 0.6 }}>
-                        ACTIVE_NODES & CAMPUS_EVENTS
+                        ACTIVE_ROOMS & CAMPUS_EVENTS
                     </span>
                     <div style={{ height: '1px', width: '100px', background: 'var(--white)', opacity: 0.2 }}></div>
                     <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', fontSize: '8px' }}>v4.5</span>
@@ -81,7 +81,7 @@ const Explore = ({ user }) => {
 
                 {activeRooms.length === 0 ? (
                     <div style={{ padding: '32px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontFamily: 'monospace', fontSize: '12px', opacity: 0.5 }}>
-                        // NO ACTIVE NODES DETECTED //
+                        // NO ACTIVE ROOMS DETECTED //
                     </div>
                 ) : (
                     <div style={{
@@ -125,7 +125,7 @@ const Explore = ({ user }) => {
             {/* COMMUNITIES / EVENTS */}
             <section>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
-                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"COMMUNITIES"</h2>
+                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"EVENTS"</h2>
                     <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
