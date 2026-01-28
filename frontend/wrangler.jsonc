@@ -1,7 +1,9 @@
 {
     "name": "jss-rooms-frontend",
+    "main": "worker.js",
     "compatibility_date": "2026-01-14",
     "assets": {
-        "directory": "./dist"
+        "directory": "./dist",
+        "binding": "ASSETS"
     }
 }
