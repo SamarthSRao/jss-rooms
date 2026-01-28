@@ -1,14 +1,16 @@
 export async function onRequest(context) {
-    // Attempt to fetch the asset from the static site
-    const response = await context.env.ASSETS.fetch(context.request);
+    const url = new URL(context.request.url);
+    const path = url.pathname;
 
-    // If the asset is not found (404), serve index.html for SPA routing
-    // This allows the client-side router to handle the path
-    if (response.status === 404) {
-        const url = new URL(context.request.url);
-        return context.env.ASSETS.fetch(new Request(url.origin + '/index.html'));
+    // Helper to check if the path looks like a file (has an extension)
+    // We check if the last segment (after the last /) contains a dot.
+    const isFile = path.split('/').pop().includes('.');
+
+    // If it's a file, serve it from assets
+    if (isFile) {
+        return context.env.ASSETS.fetch(context.request);
     }
 
-    // Otherwise, return the original response (static asset found)
-    return response;
+    // Otherwise, serve index.html for client-side routing
+    return context.env.ASSETS.fetch(new Request(url.origin + '/index.html'));
 }
