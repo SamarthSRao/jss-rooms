@@ -296,7 +296,7 @@ const Profile = ({ user, setUser }) => {
                                                 textTransform: 'uppercase',
                                                 marginBottom: '12px',
                                                 opacity: 0.6
-                                            }}>"GROUP"</label>
+                                            }}>"JOINED_GROUP"</label>
                                             {isEditing ? (
                                                 <select
                                                     value={editedProfile.group_id || ''}

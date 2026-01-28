@@ -37,6 +37,7 @@ type Room struct {
 	TimerMinutes int            `json:"timer_minutes"`
 	ExpiresAt    time.Time      `json:"expires_at"`
 	IsClosed     bool           `gorm:"default:false" json:"is_closed"`
+	GroupID      *uuid.UUID     `gorm:"type:uuid" json:"group_id"`
 	CreatedAt    time.Time      `json:"created_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }

@@ -193,6 +193,20 @@ const AdminDashboard = ({ user }) => {
                                     <option value={30}>30_MIN</option>
                                 </select>
                             </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"RESTRICT_TO_GROUP"</label>
+                                <select
+                                    className="input-industrial"
+                                    value={roomForm.group_id || ''}
+                                    onChange={e => setRoomForm({ ...roomForm, group_id: e.target.value })}
+                                    style={{ appearance: 'none' }}
+                                >
+                                    <option value="">-- NO RESTRICTION --</option>
+                                    {groups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                                    ))}
+                                </select>
+                            </div>
                             <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>
                                 "CREATE"
                             </button>

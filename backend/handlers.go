@@ -125,6 +125,7 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 			Description  string `json:"description"`
 			TimerMinutes int    `json:"timer_minutes"`
 			AdminID      string `json:"admin_id"`
+			GroupID      string `json:"group_id"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -132,12 +133,21 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 		}
 
 		adminID, _ := uuid.Parse(input.AdminID)
+		var groupIDPtr *uuid.UUID
+		if input.GroupID != "" {
+			gid, err := uuid.Parse(input.GroupID)
+			if err == nil {
+				groupIDPtr = &gid
+			}
+		}
+
 		room := Room{
 			Title:        input.Title,
 			Description:  input.Description,
 			AdminID:      adminID,
 			TimerMinutes: input.TimerMinutes,
 			ExpiresAt:    time.Now().Add(time.Duration(input.TimerMinutes) * time.Minute),
+			GroupID:      groupIDPtr,
 		}
 		DB.Create(&room)
 		json.NewEncoder(w).Encode(room)
@@ -207,6 +217,20 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	if time.Now().After(room.ExpiresAt) {
 		http.Error(w, "Room has expired", http.StatusGone)
 		return
+	}
+
+	// Check group restriction
+	if room.GroupID != nil {
+		var user User
+		if err := DB.First(&user, "id = ?", userID).Error; err != nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+		if user.GroupID == nil || *user.GroupID != *room.GroupID {
+			// Optional: Allow admin formatted override if needed, but strict for now
+			http.Error(w, "Access Denied: Room restricted to group members", http.StatusForbidden)
+			return
+		}
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
