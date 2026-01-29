@@ -462,24 +462,55 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 1. Try finding in Event Registrations (Legacy/Standard Events)
 	var reg Registration
-	if err := DB.Preload("User").Preload("Event").Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err != nil {
-		http.Error(w, "Invalid token", http.StatusNotFound)
+	if err := DB.Preload("User").Preload("Event").Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err == nil {
+		if reg.Status == "checked_in" {
+			http.Error(w, "Already checked in", http.StatusConflict)
+			return
+		}
+
+		now := time.Now()
+		DB.Model(&reg).Updates(Registration{
+			Status:      "checked_in",
+			CheckedInAt: &now,
+		})
+
+		json.NewEncoder(w).Encode(reg)
 		return
 	}
 
-	if reg.Status == "checked_in" {
-		http.Error(w, "Already checked in", http.StatusConflict)
+	// 2. Try finding in Activity Registrations (New Activity Flow)
+	// Note: Activity Registrations use their ID as the token
+	var actReg ActivityRegistration
+	if err := DB.Preload("Activity").Where("id = ?", input.QRCodeToken).First(&actReg).Error; err == nil {
+		if actReg.Status == "checked_in" {
+			http.Error(w, "Already checked in", http.StatusConflict)
+			return
+		}
+
+		// Update status
+		DB.Model(&actReg).Update("status", "checked_in")
+
+		// Fetch user details since ActivityRegistration doesn't enforce a relation preload in the struct
+		var user User
+		DB.First(&user, "id = ?", actReg.UserID)
+
+		// Construct response compatible with frontend CheckIn.jsx
+		response := map[string]interface{}{
+			"id":     actReg.ID,
+			"status": "checked_in",
+			"user":   user,
+			"event": map[string]interface{}{
+				"title": actReg.Activity.Title, // Map Activity title to 'event.title' for frontend display
+			},
+		}
+
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	now := time.Now()
-	DB.Model(&reg).Updates(Registration{
-		Status:      "checked_in",
-		CheckedInAt: &now,
-	})
-
-	json.NewEncoder(w).Encode(reg)
+	http.Error(w, "Invalid token", http.StatusNotFound)
 }
 
 func handleActivities(w http.ResponseWriter, r *http.Request) {
