@@ -13,9 +13,11 @@ const AdminDashboard = ({ user }) => {
 
     // Form states
     const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
-    const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0 });
+    const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '' });
     const [groupForm, setGroupForm] = useState({ name: '', description: '' });
     const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '' });
+
+
 
     useEffect(() => {
         fetchData();
@@ -97,7 +99,7 @@ const AdminDashboard = ({ user }) => {
             { ...eventForm, event_date: new Date(eventForm.event_date).toISOString(), organizer_id: user.id },
             { headers: { Authorization: token } }
         );
-        setEventForm({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0 });
+        setEventForm({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '' });
         fetchData();
     };
 
@@ -264,6 +266,10 @@ const AdminDashboard = ({ user }) => {
                                     <label className="input-label">"CAPACITY"</label>
                                     <input type="number" className="input-industrial" value={eventForm.capacity} onChange={e => setEventForm({ ...eventForm, capacity: parseInt(e.target.value) })} />
                                 </div>
+                            </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">"CONTACT_NUMBER"</label>
+                                <input className="input-industrial" value={eventForm.contact_number || ''} onChange={e => setEventForm({ ...eventForm, contact_number: e.target.value })} placeholder="+91..." />
                             </div>
                             <div className="input-wrapper">
                                 <label className="input-label">"DATE & TIME"</label>

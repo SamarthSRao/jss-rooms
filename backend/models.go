@@ -52,16 +52,17 @@ type Message struct {
 }
 
 type Event struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	Title       string    `gorm:"not null" json:"title"`
-	Description string    `json:"description"`
-	Category    string    `json:"category"`
-	ImageUrl    string    `json:"image_url"`
-	Location    string    `json:"location"`
-	Capacity    int       `json:"capacity"`
-	OrganizerID uuid.UUID `gorm:"type:uuid" json:"organizer_id"`
-	EventDate   time.Time `json:"event_date"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Title         string    `gorm:"not null" json:"title"`
+	Description   string    `json:"description"`
+	Category      string    `json:"category"`
+	ImageUrl      string    `json:"image_url"`
+	Location      string    `json:"location"`
+	Capacity      int       `json:"capacity"`
+	ContactNumber string    `json:"contact_number"`
+	OrganizerID   uuid.UUID `gorm:"type:uuid" json:"organizer_id"`
+	EventDate     time.Time `json:"event_date"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type Registration struct {

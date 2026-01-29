@@ -213,6 +213,20 @@ const EventDetails = ({ user }) => {
                                                 </div>
                                             </div>
                                         </div>
+                                        {event.contact_number && (
+                                            <div>
+                                                <div style={{ fontSize: '9px', opacity: 0.4, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase', fontFamily: 'monospace' }}>CONTACT</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                                                    <div style={{ padding: '16px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)' }}>
+                                                        <Users size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase' }}>{event.contact_number}</div>
+                                                        <div style={{ fontSize: '12px', opacity: 0.6, fontFamily: 'monospace' }}>ORGANIZER_OFFICIAL</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>
