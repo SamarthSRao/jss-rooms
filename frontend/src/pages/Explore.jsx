@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Users, Clock, Calendar, ArrowRight, Zap, Terminal } from 'lucide-react';
-import ActivityCard from '../components/ActivityCard';
 
 const Explore = ({ user }) => {
     const [rooms, setRooms] = useState([]);
@@ -64,10 +63,10 @@ const Explore = ({ user }) => {
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px' }}>
                     <span className="monospaced" style={{ fontSize: '11px', opacity: 0.6 }}>
-                        ACTIVE_ROOMS & CAMPUS_EVENTS
+                        ACTIVE_ROOMS & CAMPUS_ACTIVITIES
                     </span>
                     <div style={{ height: '1px', width: '100px', background: 'var(--white)', opacity: 0.2 }}></div>
-                    <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', fontSize: '8px' }}>v4.5</span>
+                    <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', fontSize: '8px' }}>v4.6</span>
                 </div>
             </header>
 
@@ -122,21 +121,21 @@ const Explore = ({ user }) => {
                 )}
             </section>
 
-            {/* COMMUNITIES / EVENTS */}
+            {/* ACTIVITIES SECTION */}
             <section>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
-                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"EVENTS"</h2>
+                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"ACTIVITIES"</h2>
                     <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
-                    {events.map((event, idx) => {
-                        const eventActivities = activities.filter(a => a.event_id === event.id);
+                    {activities.map((activity, idx) => {
+                        const parentEvent = events.find(e => e.id === activity.event_id);
 
                         return (
-                            <div key={event.id} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                                {/* Event Card */}
-                                <Link to={`/event/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <div key={activity.id} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                                {/* Activity Card reusing Event styling */}
+                                <Link to={`/activity/${activity.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                     <motion.div
                                         initial={{ opacity: 0, y: 15 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -145,9 +144,9 @@ const Explore = ({ user }) => {
                                         style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)' }}
                                     >
                                         <div style={{ height: '280px', overflow: 'hidden', position: 'relative', background: '#0a0a0a' }}>
-                                            {event.image_url ? (
+                                            {activity.image_url ? (
                                                 <img
-                                                    src={event.image_url}
+                                                    src={activity.image_url}
                                                     alt=""
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
                                                 />
@@ -160,23 +159,25 @@ const Explore = ({ user }) => {
                                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #000, transparent)', opacity: 0.6 }}></div>
 
                                             <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                                                <div className="monospaced caps" style={{ background: 'rgba(0,0,0,0.8)', padding: '4px 8px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '8px', color: '#fff' }}>
-                                                    {event.category || 'EVENT'}
-                                                </div>
+                                                {parentEvent && (
+                                                    <div className="monospaced caps" style={{ background: 'rgba(255, 255, 255, 0.9)', padding: '4px 8px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px', color: '#000', fontWeight: 'bold' }}>
+                                                        EVENT: {parentEvent.title}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div style={{ position: 'absolute', bottom: '24px', left: '24px', right: '24px' }}>
                                                 <h3 className="caps" style={{ fontSize: '3rem', fontWeight: '900', lineHeight: 1, marginBottom: '8px' }}>
-                                                    {event.title}
+                                                    {activity.title}
                                                 </h3>
                                                 <div className="monospaced" style={{ fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '16px', opacity: 0.8 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <Calendar size={12} />
-                                                        {new Date(event.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                                                        {new Date(activity.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <Clock size={12} />
-                                                        {new Date(event.event_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                                        {new Date(activity.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
                                                 </div>
                                             </div>
@@ -187,69 +188,25 @@ const Explore = ({ user }) => {
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     <MapPin size={12} style={{ opacity: 0.4 }} />
                                                     <span className="monospaced caps" style={{ fontSize: '9px', opacity: 0.7, letterSpacing: '0.05em' }}>
-                                                        {event.location || 'TBH'}
-                                                    </span>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Users size={12} style={{ opacity: 0.4 }} />
-                                                    <span className="monospaced caps" style={{ fontSize: '9px', opacity: 0.7, letterSpacing: '0.05em' }}>
-                                                        {event.capacity ? `${event.capacity} CAP` : 'OPEN'}
+                                                        {activity.location || 'CAMPUS'}
                                                     </span>
                                                 </div>
                                             </div>
-                                            <ArrowRight size={16} />
+                                            <div className="monospaced" style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                                VIEW DETAILS <ArrowRight size={12} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </Link>
-
-                                {/* Nested Activities Grid */}
-                                {eventActivities.length > 0 && (
-                                    <div style={{ marginLeft: '16px', paddingLeft: '24px', borderLeft: '2px dashed rgba(255,255,255,0.1)' }}>
-                                        <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ width: '6px', height: '6px', background: 'rgba(255,255,255,0.4)', borderRadius: '50%' }}></div>
-                                            <span className="monospaced" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.6 }}>
-                                                SUB_ACTIVITIES // {eventActivities.length}
-                                            </span>
-                                        </div>
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                                            gap: '24px'
-                                        }}>
-                                            {eventActivities.map((activity, aIdx) => (
-                                                <ActivityCard key={activity.id} activity={activity} user={user} idx={aIdx} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         );
                     })}
                 </div>
-
-                {/* Unlinked / Global Activities */}
-                {activities.filter(a => !a.event_id || a.event_id === '00000000-0000-0000-0000-000000000000').length > 0 && (
-                    <div style={{ marginTop: '80px', paddingTop: '80px', borderTop: '1px solid var(--border)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
-                            <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.6 }}>"OTHER_ACTIVITIES"</h2>
-                            <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
-                        </div>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                            gap: '24px'
-                        }}>
-                            {activities.filter(a => !a.event_id || a.event_id === '00000000-0000-0000-0000-000000000000').map((activity, idx) => (
-                                <ActivityCard key={activity.id} activity={activity} user={user} idx={idx} />
-                            ))}
-                        </div>
-                    </div>
-                )}
             </section>
 
             <footer style={{ marginTop: '120px', paddingBottom: '40px' }}>
                 <div className="monospaced flex-between" style={{ fontSize: '8px', opacity: 0.2, textTransform: 'uppercase', letterSpacing: '0.3em' }}>
-                    <span>SECURE_ACCESS_V4.5</span>
+                    <span>SECURE_ACCESS_V4.6</span>
                     <span style={{ opacity: 0.1 }}>////////////////////////////////////////////////////////////</span>
                     <span>{new Date().toLocaleTimeString()}</span>
                 </div>

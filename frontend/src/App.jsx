@@ -6,6 +6,7 @@ import Room from './pages/Room';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import EventDetails from './pages/EventDetails';
+import ActivityDetails from './pages/ActivityDetails';
 import CheckIn from './pages/CheckIn';
 import Navbar from './components/Navbar';
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/explore" element={user ? <Explore user={user} /> : <Navigate to="/login" />} />
           <Route path="/room/:id" element={user ? <Room user={user} /> : <Navigate to="/login" />} />
           <Route path="/event/:id" element={user ? <EventDetails user={user} /> : <Navigate to="/login" />} />
+          <Route path="/activity/:id" element={user ? <ActivityDetails user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard user={user} /> : <Navigate to="/explore" />} />
           <Route path="/admin/checkin" element={user?.role === 'admin' ? <CheckIn /> : <Navigate to="/explore" />} />
