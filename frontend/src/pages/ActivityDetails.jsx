@@ -172,6 +172,16 @@ const ActivityDetails = ({ user }) => {
                                         padding: '48px',
                                         background: 'linear-gradient(to top, #000, rgba(0,0,0,0.8), transparent)'
                                     }}>
+
+                                        <h1 className="responsive-title" style={{
+                                            fontSize: '3.5rem',
+                                            letterSpacing: '-0.04em',
+                                            lineHeight: 0.9,
+                                            fontWeight: '900',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            "{activity.title}"
+                                        </h1>
                                         {parentEvent && (
                                             <span style={{
                                                 background: '#fff',
@@ -184,15 +194,6 @@ const ActivityDetails = ({ user }) => {
                                                 marginBottom: '16px'
                                             }}>PART OF: {parentEvent.title}</span>
                                         )}
-                                        <h1 className="responsive-title" style={{
-                                            fontSize: '3.5rem',
-                                            letterSpacing: '-0.04em',
-                                            lineHeight: 0.9,
-                                            fontWeight: '900',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            "{activity.title}"
-                                        </h1>
                                     </div>
                                 </div>
 
