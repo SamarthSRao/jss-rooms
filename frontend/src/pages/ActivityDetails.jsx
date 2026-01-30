@@ -187,7 +187,7 @@ const ActivityDetails = ({ user }) => {
                                             <span style={{
                                                 background: '#fff',
                                                 color: '#000',
-                                                padding: '12px 28px',
+                                                padding: '8px 18px',
                                                 fontSize: '20px',
                                                 fontWeight: '900',
                                                 letterSpacing: '0.35em',
