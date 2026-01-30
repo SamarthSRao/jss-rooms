@@ -186,10 +186,10 @@ const ActivityDetails = ({ user }) => {
                                             <span style={{
                                                 background: '#fff',
                                                 color: '#000',
-                                                padding: '4px 12px',
-                                                fontSize: '10px',
+                                                padding: '12px 28px',
+                                                fontSize: '20px',
                                                 fontWeight: '900',
-                                                letterSpacing: '0.15em',
+                                                letterSpacing: '0.35em',
                                                 display: 'inline-block',
                                                 marginBottom: '16px'
                                             }}>PART OF: {parentEvent.title}</span>
