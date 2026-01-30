@@ -182,6 +182,7 @@ const ActivityDetails = ({ user }) => {
                                         }}>
                                             "{activity.title}"
                                         </h1>
+                                        <br />
                                         {parentEvent && (
                                             <span style={{
                                                 background: '#fff',
@@ -192,7 +193,7 @@ const ActivityDetails = ({ user }) => {
                                                 letterSpacing: '0.35em',
                                                 display: 'inline-block',
                                                 marginBottom: '16px'
-                                            }}>PART OF: {parentEvent.title}</span>
+                                            }}>EVENT: {parentEvent.title}</span>
                                         )}
                                     </div>
                                 </div>
