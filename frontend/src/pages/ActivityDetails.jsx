@@ -158,7 +158,6 @@ const ActivityDetails = ({ user }) => {
                                                 left: 0,
                                                 right: 0,
                                                 bottom: 0,
-                                                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)',
                                                 opacity: 0.3
                                             }}></div>
                                             <Ticket size={120} style={{ opacity: 0.1 }} />
