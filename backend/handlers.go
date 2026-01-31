@@ -195,6 +195,28 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		DB.Create(&event)
 		json.NewEncoder(w).Encode(event)
+		return
+	}
+
+	// Admin can delete events
+	if r.Method == http.MethodDelete {
+		if getRoleFromToken(r) != "admin" {
+			http.Error(w, "Forbidden: Only admins can delete events", http.StatusForbidden)
+			return
+		}
+
+		eventID := r.URL.Query().Get("id")
+		if eventID == "" {
+			http.Error(w, "Event ID required", http.StatusBadRequest)
+			return
+		}
+
+		if err := DB.Delete(&Event{}, "id = ?", eventID).Error; err != nil {
+			http.Error(w, "Failed to delete event", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 }
 

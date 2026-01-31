@@ -103,6 +103,20 @@ const AdminDashboard = ({ user }) => {
         fetchData();
     };
 
+    const deleteEvent = async (eventId) => {
+        if (!window.confirm("Are you sure you want to delete this event?")) return;
+        const token = localStorage.getItem('token');
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/events?id=${eventId}`, {
+                headers: { Authorization: token }
+            });
+            fetchData();
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            alert("Failed to delete event");
+        }
+    };
+
     const copyInviteLink = (roomId) => {
         const link = `${window.location.origin}/room/${roomId}`;
         navigator.clipboard.writeText(link);
@@ -295,6 +309,9 @@ const AdminDashboard = ({ user }) => {
                                     </div>
                                     <div className="flex gap-2">
                                         <div className="tag-zip">{event.category}</div>
+                                        <button onClick={() => deleteEvent(event.id)} className="btn-industrial hover-glitch" style={{ padding: '6px 12px', fontSize: '9px', borderColor: 'var(--safety-orange)', color: 'var(--safety-orange)' }}>
+                                            <Trash2 size={12} />
+                                        </button>
                                         <button onClick={() => window.location.href = '/admin/checkin'} className="btn-industrial" style={{ padding: '4px 8px', fontSize: '8px' }}>"SCAN"</button>
                                     </div>
                                 </div>
