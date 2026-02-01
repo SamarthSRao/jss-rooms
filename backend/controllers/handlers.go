@@ -1,121 +1,38 @@
-package main
+package controllers
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/jssrooms/backend/database"
+	"github.com/jssrooms/backend/helpers"
+	"github.com/jssrooms/backend/models"
+	"github.com/jssrooms/backend/ws"
 )
 
-func handleRegister(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var input struct {
-		USN  string `json:"usn"`
-		Role string `json:"role"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
-	}
-
-	var existingUser User
-	if err := DB.Where("usn = ?", input.USN).First(&existingUser).Error; err == nil {
-		http.Error(w, "USN already registered. Please login.", http.StatusConflict)
-		return
-	}
-
-	role := input.Role
-	if role == "" {
-		role = "user"
-	}
-	user := User{USN: input.USN, Role: role}
-	if err := DB.Create(&user).Error; err != nil {
-		http.Error(w, "Could not register user", http.StatusInternalServerError)
-		return
-	}
-
-	generateTokenResponse(w, user)
+func getTokenFromRequest(r *http.Request) string {
+	token := r.Header.Get("Authorization")
+	return strings.TrimPrefix(token, "Bearer ")
 }
 
-func handleLogin(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var input struct {
-		USN string `json:"usn"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
-	}
-
-	var user User
-	result := DB.Where("usn = ?", input.USN).First(&user)
-	if result.Error != nil {
-		http.Error(w, "USN not found. Please register first.", http.StatusNotFound)
-		return
-	}
-
-	generateTokenResponse(w, user)
-}
-
-func generateTokenResponse(w http.ResponseWriter, user User) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   user.ID,
-		"usn":  user.USN,
-		"role": user.Role,
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	tokenString, err := token.SignedString(JWTSecret)
-	if err != nil {
-		http.Error(w, "Could not generate token", http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"token": tokenString,
-		"user":  user,
-	})
-}
-
-func getRoleFromToken(r *http.Request) string {
-	tokenString := r.Header.Get("Authorization")
-	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return JWTSecret, nil
-	})
-	if token == nil {
-		return ""
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return ""
-	}
-	return claims["role"].(string)
-}
-
-func handleRooms(w http.ResponseWriter, r *http.Request) {
+func HandleRooms(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		log.Println("GET /api/rooms called")
-		var rooms []Room
-		DB.Where("is_closed = ? AND expires_at > ?", false, time.Now()).Order("created_at desc").Find(&rooms)
+		var rooms []models.Room
+		database.DB.Where("is_closed = ? AND expires_at > ?", false, time.Now()).Order("created_at desc").Find(&rooms)
 		log.Printf("Found %d rooms", len(rooms))
 		json.NewEncoder(w).Encode(rooms)
 		return
 	}
 
 	if r.Method == http.MethodPost {
-		if getRoleFromToken(r) != "admin" {
+		token := getTokenFromRequest(r)
+		if helpers.GetRoleFromToken(token) != "admin" {
 			http.Error(w, "Forbidden: Only admins can create rooms", http.StatusForbidden)
 			return
 		}
@@ -141,7 +58,7 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		room := Room{
+		room := models.Room{
 			Title:        input.Title,
 			Description:  input.Description,
 			AdminID:      adminID,
@@ -149,13 +66,13 @@ func handleRooms(w http.ResponseWriter, r *http.Request) {
 			ExpiresAt:    time.Now().Add(time.Duration(input.TimerMinutes) * time.Minute),
 			GroupID:      groupIDPtr,
 		}
-		DB.Create(&room)
+		database.DB.Create(&room)
 		json.NewEncoder(w).Encode(room)
 		return
 	}
 }
 
-func handleCloseRoom(w http.ResponseWriter, r *http.Request) {
+func HandleCloseRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -169,38 +86,40 @@ func handleCloseRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	DB.Model(&Room{}).Where("id = ?", input.RoomID).Update("is_closed", true)
+	database.DB.Model(&models.Room{}).Where("id = ?", input.RoomID).Update("is_closed", true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func handleEvents(w http.ResponseWriter, r *http.Request) {
+func HandleEvents(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		var events []Event
-		DB.Order("event_date asc").Find(&events)
+		var events []models.Event
+		database.DB.Order("event_date asc").Find(&events)
 		json.NewEncoder(w).Encode(events)
 		return
 	}
 
 	// Admin can post events
 	if r.Method == http.MethodPost {
-		if getRoleFromToken(r) != "admin" {
+		token := getTokenFromRequest(r)
+		if helpers.GetRoleFromToken(token) != "admin" {
 			http.Error(w, "Forbidden: Only admins can post events", http.StatusForbidden)
 			return
 		}
 
-		var event Event
+		var event models.Event
 		if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
-		DB.Create(&event)
+		database.DB.Create(&event)
 		json.NewEncoder(w).Encode(event)
 		return
 	}
 
 	// Admin can delete events
 	if r.Method == http.MethodDelete {
-		if getRoleFromToken(r) != "admin" {
+		token := getTokenFromRequest(r)
+		if helpers.GetRoleFromToken(token) != "admin" {
 			http.Error(w, "Forbidden: Only admins can delete events", http.StatusForbidden)
 			return
 		}
@@ -211,7 +130,7 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := DB.Delete(&Event{}, "id = ?", eventID).Error; err != nil {
+		if err := database.DB.Delete(&models.Event{}, "id = ?", eventID).Error; err != nil {
 			http.Error(w, "Failed to delete event", http.StatusInternalServerError)
 			return
 		}
@@ -220,15 +139,15 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	roomID := r.URL.Query().Get("room")
 	userUSN := r.URL.Query().Get("usn")
 	userIDStr := r.URL.Query().Get("userId")
 	userID, _ := uuid.Parse(userIDStr)
 
 	// Validate room existence and expiration
-	var room Room
-	if err := DB.First(&room, "id = ?", roomID).Error; err != nil {
+	var room models.Room
+	if err := database.DB.First(&room, "id = ?", roomID).Error; err != nil {
 		http.Error(w, "Room not found", http.StatusNotFound)
 		return
 	}
@@ -243,8 +162,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	// Check group restriction
 	if room.GroupID != nil {
-		var user User
-		if err := DB.First(&user, "id = ?", userID).Error; err != nil {
+		var user models.User
+		if err := database.DB.First(&user, "id = ?", userID).Error; err != nil {
 			http.Error(w, "User not found", http.StatusUnauthorized)
 			return
 		}
@@ -255,13 +174,13 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := ws.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade error:", err)
 		return
 	}
 
-	client := &Client{
+	client := &ws.Client{
 		ID:   userID.String(),
 		Conn: conn,
 		Send: make(chan []byte, 256),
@@ -269,18 +188,18 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch recent history
-	var history []Message
-	DB.Where("room_id = ?", roomID).Order("created_at asc").Limit(100).Find(&history)
+	var history []models.Message
+	database.DB.Where("room_id = ?", roomID).Order("created_at asc").Limit(100).Find(&history)
 	for _, msg := range history {
 		msgBytes, _ := json.Marshal(msg)
 		client.Conn.WriteMessage(websocket.TextMessage, msgBytes)
 	}
 
-	hub.Register <- client
+	ws.MainHub.Register <- client
 
 	go func() {
 		defer func() {
-			hub.Unregister <- client
+			ws.MainHub.Unregister <- client
 			conn.Close()
 		}()
 		for {
@@ -290,15 +209,15 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Save to DB
-			msg := Message{
+			msg := models.Message{
 				RoomID:  roomID,
 				UserID:  userID,
 				UserUSN: userUSN,
 				Content: string(message),
 			}
-			DB.Create(&msg)
+			database.DB.Create(&msg)
 
-			hub.Broadcast <- msg
+			ws.MainHub.Broadcast <- msg
 		}
 	}()
 
@@ -309,100 +228,39 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func getUserIDFromToken(r *http.Request) uuid.UUID {
-	tokenString := r.Header.Get("Authorization")
-	if tokenString == "" {
-		return uuid.Nil
-	}
-	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return JWTSecret, nil
-	})
-	if token == nil {
-		return uuid.Nil
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return uuid.Nil
-	}
-	idStr, ok := claims["id"].(string)
-	if !ok {
-		return uuid.Nil
-	}
-	id, _ := uuid.Parse(idStr)
-	return id
-}
-
-func handleProfile(w http.ResponseWriter, r *http.Request) {
-	userID := getUserIDFromToken(r)
-	if userID == uuid.Nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
+func HandleGroups(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		var user User
-		if err := DB.Preload("Group").Preload("ActivityRegistrations.Activity").First(&user, "id = ?", userID).Error; err != nil {
-			http.Error(w, "User not found", http.StatusNotFound)
-			return
-		}
-		json.NewEncoder(w).Encode(user)
-		return
-	}
-
-	if r.Method == http.MethodPut {
-		var input struct {
-			Name         string    `json:"name"`
-			Bio          string    `json:"bio"`
-			ProfileImage string    `json:"profile_image"`
-			GroupID      uuid.UUID `json:"group_id"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			http.Error(w, "Invalid input", http.StatusBadRequest)
-			return
-		}
-
-		DB.Model(&User{}).Where("id = ?", userID).Updates(User{
-			Name:         input.Name,
-			Bio:          input.Bio,
-			ProfileImage: input.ProfileImage,
-			GroupID:      &input.GroupID,
-		})
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-}
-
-func handleGroups(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		var groups []Group
-		DB.Find(&groups)
+		var groups []models.Group
+		database.DB.Find(&groups)
 		json.NewEncoder(w).Encode(groups)
 		return
 	}
 
 	if r.Method == http.MethodPost {
-		if getRoleFromToken(r) != "admin" {
+		token := getTokenFromRequest(r)
+		if helpers.GetRoleFromToken(token) != "admin" {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
-		var group Group
+		var group models.Group
 		if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
-		DB.Create(&group)
+		database.DB.Create(&group)
 		json.NewEncoder(w).Encode(group)
 		return
 	}
 }
 
-func handleEventRegister(w http.ResponseWriter, r *http.Request) {
+func HandleEventRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID := getUserIDFromToken(r)
+	token := getTokenFromRequest(r)
+	userID := helpers.GetUserIDFromToken(token)
 	if userID == uuid.Nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -417,19 +275,19 @@ func handleEventRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if already registered
-	var existing Registration
-	if err := DB.Where("event_id = ? AND user_id = ?", input.EventID, userID).First(&existing).Error; err == nil {
+	var existing models.Registration
+	if err := database.DB.Where("event_id = ? AND user_id = ?", input.EventID, userID).First(&existing).Error; err == nil {
 		http.Error(w, "Already registered", http.StatusConflict)
 		return
 	}
 
-	reg := Registration{
+	reg := models.Registration{
 		EventID:     input.EventID,
 		UserID:      userID,
 		QRCodeToken: uuid.New().String(),
 		Status:      "registered",
 	}
-	if err := DB.Create(&reg).Error; err != nil {
+	if err := database.DB.Create(&reg).Error; err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return
 	}
@@ -437,14 +295,15 @@ func handleEventRegister(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(reg)
 }
 
-func handleEventRegistrations(w http.ResponseWriter, r *http.Request) {
+func HandleEventRegistrations(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	role := getRoleFromToken(r)
-	userID := getUserIDFromToken(r)
+	token := getTokenFromRequest(r)
+	role := helpers.GetRoleFromToken(token)
+	userID := helpers.GetUserIDFromToken(token)
 
 	eventID := r.URL.Query().Get("event_id")
 	if eventID != "" {
@@ -453,25 +312,26 @@ func handleEventRegistrations(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
-		var regs []Registration
-		DB.Where("event_id = ?", eventID).Find(&regs)
+		var regs []models.Registration
+		database.DB.Where("event_id = ?", eventID).Find(&regs)
 		json.NewEncoder(w).Encode(regs)
 		return
 	}
 
 	// User view
-	var regs []Registration
-	DB.Where("user_id = ?", userID).Find(&regs)
+	var regs []models.Registration
+	database.DB.Where("user_id = ?", userID).Find(&regs)
 	json.NewEncoder(w).Encode(regs)
 }
 
-func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
+func HandleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if getRoleFromToken(r) != "admin" {
+	token := getTokenFromRequest(r)
+	if helpers.GetRoleFromToken(token) != "admin" {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
@@ -485,15 +345,15 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 1. Try finding in Event Registrations (Legacy/Standard Events)
-	var reg Registration
-	if err := DB.Preload("User").Preload("Event").Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err == nil {
+	var reg models.Registration
+	if err := database.DB.Preload("User").Preload("Event").Where("qr_code_token = ?", input.QRCodeToken).First(&reg).Error; err == nil {
 		if reg.Status == "checked_in" {
 			http.Error(w, "Already checked in", http.StatusConflict)
 			return
 		}
 
 		now := time.Now()
-		DB.Model(&reg).Updates(Registration{
+		database.DB.Model(&reg).Updates(models.Registration{
 			Status:      "checked_in",
 			CheckedInAt: &now,
 		})
@@ -503,28 +363,26 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Try finding in Activity Registrations (New Activity Flow)
-	// Note: Activity Registrations use their ID as the token
-	var actReg ActivityRegistration
-	if err := DB.Preload("Activity").Where("id = ?", input.QRCodeToken).First(&actReg).Error; err == nil {
+	var actReg models.ActivityRegistration
+	if err := database.DB.Preload("Activity").Where("id = ?", input.QRCodeToken).First(&actReg).Error; err == nil {
 		if actReg.Status == "checked_in" {
 			http.Error(w, "Already checked in", http.StatusConflict)
 			return
 		}
 
 		// Update status
-		DB.Model(&actReg).Update("status", "checked_in")
+		database.DB.Model(&actReg).Update("status", "checked_in")
 
-		// Fetch user details since ActivityRegistration doesn't enforce a relation preload in the struct
-		var user User
-		DB.First(&user, "id = ?", actReg.UserID)
+		// Fetch user details
+		var user models.User
+		database.DB.First(&user, "id = ?", actReg.UserID)
 
-		// Construct response compatible with frontend CheckIn.jsx
 		response := map[string]interface{}{
 			"id":     actReg.ID,
 			"status": "checked_in",
 			"user":   user,
 			"event": map[string]interface{}{
-				"title": actReg.Activity.Title, // Map Activity title to 'event.title' for frontend display
+				"title": actReg.Activity.Title,
 			},
 		}
 
@@ -535,37 +393,39 @@ func handleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Invalid token", http.StatusNotFound)
 }
 
-func handleActivities(w http.ResponseWriter, r *http.Request) {
+func HandleActivities(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		var activities []Activity
-		DB.Order("start_time asc").Find(&activities)
+		var activities []models.Activity
+		database.DB.Order("start_time asc").Find(&activities)
 		json.NewEncoder(w).Encode(activities)
 		return
 	}
 
 	if r.Method == http.MethodPost {
-		if getRoleFromToken(r) != "admin" {
+		token := getTokenFromRequest(r)
+		if helpers.GetRoleFromToken(token) != "admin" {
 			http.Error(w, "Forbidden: Only admins can post activities", http.StatusForbidden)
 			return
 		}
 
-		var activity Activity
+		var activity models.Activity
 		if err := json.NewDecoder(r.Body).Decode(&activity); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
-		DB.Create(&activity)
+		database.DB.Create(&activity)
 		json.NewEncoder(w).Encode(activity)
 	}
 }
 
-func handleActivityRegister(w http.ResponseWriter, r *http.Request) {
+func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID := getUserIDFromToken(r)
+	token := getTokenFromRequest(r)
+	userID := helpers.GetUserIDFromToken(token)
 	if userID == uuid.Nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -580,26 +440,26 @@ func handleActivityRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Double check user exists to get USN
-	var user User
-	if err := DB.First(&user, "id = ?", userID).Error; err != nil {
+	var user models.User
+	if err := database.DB.First(&user, "id = ?", userID).Error; err != nil {
 		http.Error(w, "User not found", http.StatusBadRequest)
 		return
 	}
 
 	// Check if already registered
-	var existing ActivityRegistration
-	if err := DB.Where("activity_id = ? AND user_id = ?", input.ActivityID, userID).First(&existing).Error; err == nil {
+	var existing models.ActivityRegistration
+	if err := database.DB.Where("activity_id = ? AND user_id = ?", input.ActivityID, userID).First(&existing).Error; err == nil {
 		http.Error(w, "Already registered for this activity", http.StatusConflict)
 		return
 	}
 
-	reg := ActivityRegistration{
+	reg := models.ActivityRegistration{
 		ActivityID: input.ActivityID,
 		UserID:     userID,
 		UserUSN:    user.USN,
 		Status:     "registered",
 	}
-	if err := DB.Create(&reg).Error; err != nil {
+	if err := database.DB.Create(&reg).Error; err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return
 	}

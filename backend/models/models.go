@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 type User struct {
 	ID                    uuid.UUID              `gorm:"type:uuid;primaryKey" json:"id"`
 	USN                   string                 `gorm:"uniqueIndex;not null" json:"usn"`
+	Password              string                 `json:"-"`
 	Name                  string                 `json:"name"`
 	Bio                   string                 `json:"bio"`
 	Role                  string                 `gorm:"default:'user'" json:"role"` // 'admin' or 'user'

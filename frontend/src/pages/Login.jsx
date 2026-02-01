@@ -6,6 +6,7 @@ const Login = ({ setUser }) => {
     const [mode, setMode] = useState('login');
     const [usn, setUsn] = useState('');
     const [role, setRole] = useState('user');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -15,7 +16,7 @@ const Login = ({ setUser }) => {
         setError('');
         try {
             const endpoint = mode === 'login' ? 'login' : 'register';
-            const payload = mode === 'login' ? { usn } : { usn, role };
+            const payload = mode === 'login' ? { usn, password } : { usn, role, password };
             const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/${endpoint}`, payload);
             const { token, user } = response.data;
             localStorage.setItem('token', token);
@@ -74,6 +75,18 @@ const Login = ({ setUser }) => {
                             placeholder="SAMPLE: 1JSXXCSXXX"
                             value={usn}
                             onChange={(e) => setUsn(e.target.value.toUpperCase())}
+                            required
+                        />
+                    </div>
+
+                    <div className="input-wrapper" style={{ marginTop: '20px', marginBottom: '20px' }}>
+                        <label className="input-label">"PASSWORD"</label>
+                        <input
+                            type="password"
+                            className="input-industrial"
+                            placeholder="******"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
