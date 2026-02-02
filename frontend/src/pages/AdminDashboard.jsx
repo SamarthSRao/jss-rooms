@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Calendar, Layout, Copy, Activity } from 'lucide-react';
+import { Plus, Trash2, Calendar, Layout, Copy, Activity, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AdminDashboard = ({ user }) => {
@@ -23,7 +23,12 @@ const AdminDashboard = ({ user }) => {
 
     useEffect(() => {
         fetchData();
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const fetchData = async () => {
         const token = localStorage.getItem('token');
@@ -154,359 +159,397 @@ const AdminDashboard = ({ user }) => {
                 </div>
             </header>
 
-            <div style={{ display: 'flex', gap: '2px', marginBottom: '48px', border: '1px solid var(--border)', padding: '2px', background: 'var(--border)' }}>
-                <button
-                    onClick={() => setActiveTab('rooms')}
-                    className={`caps ${activeTab === 'rooms' ? '' : 'opacity-60'}`}
-                    style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'rooms' ? 'var(--white)' : 'var(--black)', color: activeTab === 'rooms' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
-                >
-                    "ROOMS"
-                </button>
-                <button
-                    onClick={() => setActiveTab('events')}
-                    className={`caps ${activeTab === 'events' ? '' : 'opacity-60'}`}
-                    style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'events' ? 'var(--white)' : 'var(--black)', color: activeTab === 'events' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
-                >
-                    "EVENTS"
-                </button>
-                <button
-                    onClick={() => setActiveTab('activities')}
-                    className={`caps ${activeTab === 'activities' ? '' : 'opacity-60'}`}
-                    style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'activities' ? 'var(--white)' : 'var(--black)', color: activeTab === 'activities' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
-                >
-                    "ACTIVITIES"
-                </button>
-                <button
-                    onClick={() => setActiveTab('groups')}
-                    className={`caps ${activeTab === 'groups' ? '' : 'opacity-60'}`}
-                    style={{ flex: 1, padding: '16px', border: 'none', background: activeTab === 'groups' ? 'var(--white)' : 'var(--black)', color: activeTab === 'groups' ? 'var(--black)' : 'var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '12px' }}
-                >
-                    "GROUPS"
-                </button>
-            </div>
-
-            {activeTab === 'rooms' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: FORM</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"CREATE_ROOM"</h3>
-                        <form onSubmit={createRoom} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div className="input-wrapper">
-                                <label className="input-label">"TITLE"</label>
-                                <input
-                                    className="input-industrial"
-                                    placeholder="ROOM_NAME"
-                                    value={roomForm.title}
-                                    onChange={e => setRoomForm({ ...roomForm, title: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DESCRIPTION"</label>
-                                <textarea
-                                    className="input-industrial"
-                                    placeholder="Tell us about this room..."
-                                    style={{ height: '100px', resize: 'none' }}
-                                    value={roomForm.description}
-                                    onChange={e => setRoomForm({ ...roomForm, description: e.target.value })}
-                                />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"TIMER_LIMIT"</label>
-                                <select
-                                    className="input-industrial"
-                                    value={roomForm.timer_minutes}
-                                    onChange={e => setRoomForm({ ...roomForm, timer_minutes: parseInt(e.target.value) })}
-                                    required
-                                    style={{ appearance: 'none' }}
-                                >
-                                    <option value={5}>05_MIN</option>
-                                    <option value={10}>10_MIN</option>
-                                    <option value={30}>30_MIN</option>
-                                </select>
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"RESTRICT_TO_GROUP"</label>
-                                <select
-                                    className="input-industrial"
-                                    value={roomForm.group_id || ''}
-                                    onChange={e => setRoomForm({ ...roomForm, group_id: e.target.value })}
-                                    style={{ appearance: 'none' }}
-                                >
-                                    <option value="">-- NO RESTRICTION --</option>
-                                    {groups.map(g => (
-                                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>
-                                "CREATE"
-                            </button>
-                        </form>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: DATABASE</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_ROOMS"</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                            {rooms.map(room => (
-                                <div key={room.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '20px', background: 'var(--black)' }}>
-                                    <div>
-                                        <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{room.title}</div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>ID: {room.id}</div>
-                                        <div className="tag-zip" style={{ marginTop: '8px', background: 'var(--blueprint-blue)', color: 'white' }}>LIMIT: {room.timer_minutes}M</div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                        <button onClick={() => copyInviteLink(room.id)} className="btn-industrial" style={{ padding: '6px 12px', fontSize: '9px' }}>
-                                            <Copy size={12} />
-                                        </button>
-                                        <button onClick={() => closeRoom(room.id)} className="btn-industrial hover-glitch" style={{ padding: '6px 12px', fontSize: '9px', borderColor: 'var(--safety-orange)', color: 'var(--safety-orange)' }}>
-                                            <Trash2 size={12} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px', alignItems: 'flex-start' }}>
+                {/* SIDEBAR NAVIGATION */}
+                <div style={{
+                    display: isMobile ? 'grid' : 'flex',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'none',
+                    flexDirection: 'column',
+                    width: isMobile ? '100%' : '240px',
+                    gap: isMobile ? '12px' : '4px',
+                    border: isMobile ? 'none' : '1px solid var(--border)',
+                    padding: isMobile ? '0' : '4px',
+                    background: isMobile ? 'transparent' : 'var(--bg-card)',
+                    position: isMobile ? 'relative' : 'sticky',
+                    top: isMobile ? '0' : '20px',
+                    flexShrink: 0,
+                    marginBottom: isMobile ? '40px' : '0'
+                }}>
+                    {!isMobile && (
+                        <div className="monospaced" style={{ padding: '12px', fontSize: '10px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)', marginBottom: '4px', letterSpacing: '0.1em' }}>
+                            // SYSTEM_MODULES
                         </div>
-                    </motion.div>
+                    )}
+
+                    {[
+                        { id: 'rooms', label: 'ROOMS', icon: <Layout size={18} /> },
+                        { id: 'events', label: 'EVENTS', icon: <Calendar size={18} /> },
+                        { id: 'activities', label: 'ACTIVITIES', icon: <Activity size={18} /> },
+                        { id: 'groups', label: 'GROUPS', icon: <Users size={18} /> }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className="caps"
+                            style={{
+                                display: 'flex',
+                                flexDirection: isMobile ? 'column' : 'row',
+                                alignItems: 'center',
+                                justifyContent: isMobile ? 'center' : 'flex-start',
+                                gap: '12px',
+                                padding: isMobile ? '20px' : '16px 20px',
+                                border: '1px solid',
+                                borderColor: activeTab === tab.id ? 'var(--black)' : 'var(--border)',
+                                background: activeTab === tab.id ? 'var(--white)' : 'var(--bg-main)',
+                                color: activeTab === tab.id ? 'var(--black)' : 'var(--text-muted)',
+                                cursor: 'pointer',
+                                fontWeight: activeTab === tab.id ? '900' : '500',
+                                fontSize: '12px',
+                                height: isMobile ? 'auto' : 'auto',
+                                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <span style={{ opacity: activeTab === tab.id ? 1 : 0.7 }}>{tab.icon}</span>
+                            <span>"{tab.label}"</span>
+
+                            {activeTab === tab.id && !isMobile && (
+                                <div style={{ marginLeft: 'auto', width: '6px', height: '6px', background: 'var(--safety-orange)', borderRadius: '50%' }} />
+                            )}
+                        </button>
+                    ))}
                 </div>
-            )}
 
-            {activeTab === 'events' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: NEW_ENTRY</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"POST_EVENT"</h3>
-                        <form onSubmit={createEvent} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="input-wrapper">
-                                    <label className="input-label">"TITLE"</label>
-                                    <input className="input-industrial" value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} required />
-                                </div>
-                                <div className="input-wrapper">
-                                    <label className="input-label">"CATEGORY"</label>
-                                    <input className="input-industrial" value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="input-wrapper">
-                                    <label className="input-label">"LOCATION"</label>
-                                    <input className="input-industrial" value={eventForm.location} onChange={e => setEventForm({ ...eventForm, location: e.target.value })} />
-                                </div>
-                                <div className="input-wrapper">
-                                    <label className="input-label">"CAPACITY"</label>
-                                    <input type="number" className="input-industrial" value={eventForm.capacity} onChange={e => setEventForm({ ...eventForm, capacity: parseInt(e.target.value) })} />
-                                </div>
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"CONTACT_NUMBER"</label>
-                                <input className="input-industrial" value={eventForm.contact_number || ''} onChange={e => setEventForm({ ...eventForm, contact_number: e.target.value })} placeholder="+91..." />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DATE & TIME"</label>
-                                <input type="datetime-local" className="input-industrial" value={eventForm.event_date} onChange={e => setEventForm({ ...eventForm, event_date: e.target.value })} required />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DESCRIPTION"</label>
-                                <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={eventForm.description} onChange={e => setEventForm({ ...eventForm, description: e.target.value })} />
-                            </div>
-                            <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"POST_EVENT"</button>
-                        </form>
-                    </motion.div>
+                {/* MAIN CONTENT AREA */}
+                <div style={{ flex: 1, width: '100%' }}>
 
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: DATABASE</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_EVENTS"</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                            {events.map(event => (
-                                <div key={event.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{event.title}</div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>REGS: {registrations[event.id]?.length || 0} / {event.capacity || '∞'}</div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <div className="tag-zip">{event.category}</div>
-                                        <button onClick={() => deleteEvent(event.id)} className="btn-industrial hover-glitch" style={{ padding: '6px 12px', fontSize: '9px', borderColor: 'var(--safety-orange)', color: 'var(--safety-orange)' }}>
-                                            <Trash2 size={12} />
-                                        </button>
-                                        <button onClick={() => window.location.href = '/admin/checkin'} className="btn-industrial" style={{ padding: '4px 8px', fontSize: '8px' }}>"SCAN"</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            )}
-
-            {activeTab === 'activities' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: NEW_ENTRY</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"POST_ACTIVITY"</h3>
-                        <form onSubmit={createActivity} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div className="input-wrapper">
-                                <label className="input-label">"PARENT_EVENT"</label>
-                                <select
-                                    className="input-industrial"
-                                    value={activityForm.event_id || ''}
-                                    onChange={e => setActivityForm({ ...activityForm, event_id: e.target.value })}
-                                    style={{ appearance: 'none' }}
-                                >
-                                    <option value="">-- SELECT EVENT --</option>
-                                    {events.map(ev => (
-                                        <option key={ev.id} value={ev.id}>{ev.title}</option>
+                    {activeTab === 'rooms' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: DATABASE</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_ROOMS"</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                    {rooms.map(room => (
+                                        <div key={room.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '20px', background: 'var(--black)' }}>
+                                            <div>
+                                                <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{room.title}</div>
+                                                <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>ID: {room.id}</div>
+                                                <div className="tag-zip" style={{ marginTop: '8px', background: 'var(--blueprint-blue)', color: 'white' }}>LIMIT: {room.timer_minutes}M</div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                                <button onClick={() => copyInviteLink(room.id)} className="btn-industrial" style={{ padding: '6px 12px', fontSize: '9px' }}>
+                                                    <Copy size={12} />
+                                                </button>
+                                                <button onClick={() => closeRoom(room.id)} className="btn-industrial" style={{ padding: '6px 12px', fontSize: '9px', borderColor: 'var(--safety-orange)', color: 'var(--safety-orange)' }}>
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
-                                </select>
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"TITLE"</label>
-                                <input className="input-industrial" value={activityForm.title} onChange={e => setActivityForm({ ...activityForm, title: e.target.value })} required />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"LOCATION"</label>
-                                <input className="input-industrial" value={activityForm.location} onChange={e => setActivityForm({ ...activityForm, location: e.target.value })} />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DATE & TIME"</label>
-                                <input type="datetime-local" className="input-industrial" value={activityForm.start_time} onChange={e => setActivityForm({ ...activityForm, start_time: e.target.value })} required />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"IMAGE_URL"</label>
-                                <input className="input-industrial" value={activityForm.image_url} onChange={e => setActivityForm({ ...activityForm, image_url: e.target.value })} placeholder="https://..." />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DESCRIPTION"</label>
-                                <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={activityForm.description} onChange={e => setActivityForm({ ...activityForm, description: e.target.value })} />
-                            </div>
-                            <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"POST_ACTIVITY"</button>
-                        </form>
-                    </motion.div>
+                                </div>
+                            </motion.div>
 
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: DATABASE</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_ACTIVITIES"</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                            {activities.map(activity => (
-                                <div key={activity.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{activity.title}</div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>{new Date(activity.start_time).toLocaleString()}</div>
+                            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: FORM</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"CREATE_ROOM"</h3>
+                                <form onSubmit={createRoom} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"TITLE"</label>
+                                        <input
+                                            className="input-industrial"
+                                            placeholder="ROOM_NAME"
+                                            value={roomForm.title}
+                                            onChange={e => setRoomForm({ ...roomForm, title: e.target.value })}
+                                            required
+                                        />
                                     </div>
-                                    <div className="flex gap-2">
-                                        <div className="tag-zip">ACTIVITY</div>
-                                        <button
-                                            onClick={() => fetchActivityRegistrations(activity.id)}
-                                            className="btn-industrial"
-                                            style={{ padding: '6px 12px', fontSize: '9px', marginLeft: '10px' }}
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DESCRIPTION"</label>
+                                        <textarea
+                                            className="input-industrial"
+                                            placeholder="Tell us about this room..."
+                                            style={{ height: '100px', resize: 'none' }}
+                                            value={roomForm.description}
+                                            onChange={e => setRoomForm({ ...roomForm, description: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"TIMER_LIMIT"</label>
+                                        <select
+                                            className="input-industrial"
+                                            value={roomForm.timer_minutes}
+                                            onChange={e => setRoomForm({ ...roomForm, timer_minutes: parseInt(e.target.value) })}
+                                            required
+                                            style={{ appearance: 'none' }}
                                         >
-                                            "PARTICIPANTS"
-                                        </button>
+                                            <option value={5}>05_MIN</option>
+                                            <option value={10}>10_MIN</option>
+                                            <option value={30}>30_MIN</option>
+                                        </select>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            )}
-
-            {activeTab === 'groups' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: NEW_ENTRY</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"CREATE_GROUP"</h3>
-                        <form onSubmit={createGroup} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div className="input-wrapper">
-                                <label className="input-label">"GROUP_NAME"</label>
-                                <input className="input-industrial" value={groupForm.name} onChange={e => setGroupForm({ ...groupForm, name: e.target.value })} required />
-                            </div>
-                            <div className="input-wrapper">
-                                <label className="input-label">"DESCRIPTION"</label>
-                                <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={groupForm.description} onChange={e => setGroupForm({ ...groupForm, description: e.target.value })} />
-                            </div>
-                            <button type="submit" className="btn-industrial hover-glitch" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"CREATE"</button>
-                        </form>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
-                        <div className="card-metadata">SRC: DATABASE</div>
-                        <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_GROUPS"</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                            {groups.map(group => (
-                                <div key={group.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{group.name}</div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>{group.description}</div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"RESTRICT_TO_GROUP"</label>
+                                        <select
+                                            className="input-industrial"
+                                            value={roomForm.group_id || ''}
+                                            onChange={e => setRoomForm({ ...roomForm, group_id: e.target.value })}
+                                            style={{ appearance: 'none' }}
+                                        >
+                                            <option value="">-- NO RESTRICTION --</option>
+                                            {groups.map(g => (
+                                                <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <div className="tag-zip" style={{ background: 'var(--blueprint-blue)' }}>ACTIVE</div>
-                                </div>
-                            ))}
+                                    <button type="submit" className="btn-industrial" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>
+                                        "CREATE"
+                                    </button>
+                                </form>
+                            </motion.div>
                         </div>
-                    </motion.div>
-                </div>
-            )}
+                    )}
+
+                    {activeTab === 'events' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: DATABASE</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_EVENTS"</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                    {events.map(event => (
+                                        <div key={event.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{event.title}</div>
+                                                <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>REGS: {registrations[event.id]?.length || 0} / {event.capacity || '∞'}</div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div className="tag-zip">{event.category}</div>
+                                                <button onClick={() => deleteEvent(event.id)} className="btn-industrial" style={{ padding: '6px 12px', fontSize: '9px', borderColor: 'var(--safety-orange)', color: 'var(--safety-orange)' }}>
+                                                    <Trash2 size={12} />
+                                                </button>
+                                                <button onClick={() => window.location.href = '/admin/checkin'} className="btn-industrial" style={{ padding: '4px 8px', fontSize: '8px' }}>"SCAN"</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: NEW_ENTRY</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"POST_EVENT"</h3>
+                                <form onSubmit={createEvent} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="input-wrapper">
+                                            <label className="input-label">"TITLE"</label>
+                                            <input className="input-industrial" value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} required />
+                                        </div>
+                                        <div className="input-wrapper">
+                                            <label className="input-label">"CATEGORY"</label>
+                                            <input className="input-industrial" value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="input-wrapper">
+                                            <label className="input-label">"LOCATION"</label>
+                                            <input className="input-industrial" value={eventForm.location} onChange={e => setEventForm({ ...eventForm, location: e.target.value })} />
+                                        </div>
+                                        <div className="input-wrapper">
+                                            <label className="input-label">"CAPACITY"</label>
+                                            <input type="number" className="input-industrial" value={eventForm.capacity} onChange={e => setEventForm({ ...eventForm, capacity: parseInt(e.target.value) })} />
+                                        </div>
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"CONTACT_NUMBER"</label>
+                                        <input className="input-industrial" value={eventForm.contact_number || ''} onChange={e => setEventForm({ ...eventForm, contact_number: e.target.value })} placeholder="+91..." />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DATE & TIME"</label>
+                                        <input type="datetime-local" className="input-industrial" value={eventForm.event_date} onChange={e => setEventForm({ ...eventForm, event_date: e.target.value })} required />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DESCRIPTION"</label>
+                                        <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={eventForm.description} onChange={e => setEventForm({ ...eventForm, description: e.target.value })} />
+                                    </div>
+                                    <button type="submit" className="btn-industrial" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"POST_EVENT"</button>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    {activeTab === 'activities' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: DATABASE</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_ACTIVITIES"</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                    {activities.map(activity => (
+                                        <div key={activity.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{activity.title}</div>
+                                                <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>{new Date(activity.start_time).toLocaleString()}</div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div className="tag-zip">ACTIVITY</div>
+                                                <button
+                                                    onClick={() => fetchActivityRegistrations(activity.id)}
+                                                    className="btn-industrial"
+                                                    style={{ padding: '6px 12px', fontSize: '9px', marginLeft: '10px' }}
+                                                >
+                                                    "PARTICIPANTS"
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: NEW_ENTRY</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"POST_ACTIVITY"</h3>
+                                <form onSubmit={createActivity} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"PARENT_EVENT"</label>
+                                        <select
+                                            className="input-industrial"
+                                            value={activityForm.event_id || ''}
+                                            onChange={e => setActivityForm({ ...activityForm, event_id: e.target.value })}
+                                            style={{ appearance: 'none' }}
+                                        >
+                                            <option value="">-- SELECT EVENT --</option>
+                                            {events.map(ev => (
+                                                <option key={ev.id} value={ev.id}>{ev.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"TITLE"</label>
+                                        <input className="input-industrial" value={activityForm.title} onChange={e => setActivityForm({ ...activityForm, title: e.target.value })} required />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"LOCATION"</label>
+                                        <input className="input-industrial" value={activityForm.location} onChange={e => setActivityForm({ ...activityForm, location: e.target.value })} />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DATE & TIME"</label>
+                                        <input type="datetime-local" className="input-industrial" value={activityForm.start_time} onChange={e => setActivityForm({ ...activityForm, start_time: e.target.value })} required />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"IMAGE_URL"</label>
+                                        <input className="input-industrial" value={activityForm.image_url} onChange={e => setActivityForm({ ...activityForm, image_url: e.target.value })} placeholder="https://..." />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DESCRIPTION"</label>
+                                        <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={activityForm.description} onChange={e => setActivityForm({ ...activityForm, description: e.target.value })} />
+                                    </div>
+                                    <button type="submit" className="btn-industrial" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"POST_ACTIVITY"</button>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    {activeTab === 'groups' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px' }}>
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: DATABASE</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"ACTIVE_GROUPS"</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                    {groups.map(group => (
+                                        <div key={group.id} style={{ padding: '20px', background: 'var(--black)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div className="caps" style={{ fontWeight: '800', fontSize: '14px' }}>{group.name}</div>
+                                                <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>{group.description}</div>
+                                            </div>
+                                            <div className="tag-zip" style={{ background: 'var(--blueprint-blue)' }}>ACTIVE</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="card-industrial">
+                                <div className="card-metadata">SRC: NEW_ENTRY</div>
+                                <h3 className="caps" style={{ marginBottom: '32px', fontSize: '1.2rem' }}>"CREATE_GROUP"</h3>
+                                <form onSubmit={createGroup} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"GROUP_NAME"</label>
+                                        <input className="input-industrial" value={groupForm.name} onChange={e => setGroupForm({ ...groupForm, name: e.target.value })} required />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"DESCRIPTION"</label>
+                                        <textarea className="input-industrial" style={{ height: '80px', resize: 'none' }} value={groupForm.description} onChange={e => setGroupForm({ ...groupForm, description: e.target.value })} />
+                                    </div>
+                                    <button type="submit" className="btn-industrial" style={{ background: 'var(--white)', color: 'var(--black)', justifyContent: 'center' }}>"CREATE"</button>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </div>{/* End Main Content Area */}
+            </div>{/* End Sidebar Flex Container */}
 
             <div className="cross-hatch" style={{ height: '20px', width: '100%', marginTop: '60px', opacity: 0.1 }}></div>
 
             {/* PARTICIPANTS MODAL */}
-            {viewingParticipants && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    backdropFilter: 'blur(5px)',
-                    zIndex: 1000,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="card-industrial"
-                        style={{ width: '90%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--bg-card)' }}
-                    >
-                        <div className="flex-between" style={{ marginBottom: '20px' }}>
-                            <h3 className="caps">"ACTIVITY_LOG"</h3>
-                            <button onClick={() => setViewingParticipants(null)} className="btn-industrial" style={{ padding: '5px 10px' }}>CLOSE</button>
-                        </div>
-
-                        {activityRegistrations.length === 0 ? (
-                            <p className="monospaced" style={{ opacity: 0.5, textAlign: 'center', padding: '40px' }}>NO_DATA_FOUND</p>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px', background: 'var(--black)', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                                    <div>USER_USN</div>
-                                    <div>STATUS</div>
-                                    <div>TIMESTAMP</div>
-                                </div>
-                                {activityRegistrations.map((reg) => (
-                                    <div key={reg.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '15px', background: 'var(--industrial-gray)', borderBottom: '1px solid var(--border)' }}>
-                                        <div className="monospaced" style={{ fontWeight: 'bold' }}>{reg.user_usn || "N/A"}</div>
-                                        <div>
-                                            <span className="tag-zip" style={{
-                                                background: reg.status === 'checked_in' ? 'var(--safety-yellow)' : 'var(--border)',
-                                                color: reg.status === 'checked_in' ? 'black' : 'white',
-                                                marginLeft: 0
-                                            }}>
-                                                {reg.status}
-                                            </span>
-                                        </div>
-                                        <div className="monospaced" style={{ fontSize: '10px', opacity: 0.6 }}>
-                                            {new Date(reg.created_at).toLocaleString()}
-                                        </div>
-                                    </div>
-                                ))}
+            {
+                viewingParticipants && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.8)',
+                        backdropFilter: 'blur(5px)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="card-industrial"
+                            style={{ width: '90%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--bg-card)' }}
+                        >
+                            <div className="flex-between" style={{ marginBottom: '20px' }}>
+                                <h3 className="caps">"ACTIVITY_LOG"</h3>
+                                <button onClick={() => setViewingParticipants(null)} className="btn-industrial" style={{ padding: '5px 10px' }}>CLOSE</button>
                             </div>
-                        )}
-                        <div className="monospaced" style={{ marginTop: '20px', fontSize: '10px', opacity: 0.5, textAlign: 'right' }}>
-                            TOTAL_RECORDS: {activityRegistrations.length}
-                        </div>
-                    </motion.div>
-                </div>
-            )}
-        </div>
+
+                            {activityRegistrations.length === 0 ? (
+                                <p className="monospaced" style={{ opacity: 0.5, textAlign: 'center', padding: '40px' }}>NO_DATA_FOUND</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px', background: 'var(--black)', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                        <div>USER_USN</div>
+                                        <div>STATUS</div>
+                                        <div>TIMESTAMP</div>
+                                    </div>
+                                    {activityRegistrations.map((reg) => (
+                                        <div key={reg.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '15px', background: 'var(--industrial-gray)', borderBottom: '1px solid var(--border)' }}>
+                                            <div className="monospaced" style={{ fontWeight: 'bold' }}>{reg.user_usn || "N/A"}</div>
+                                            <div>
+                                                <span className="tag-zip" style={{
+                                                    background: reg.status === 'checked_in' ? 'var(--safety-yellow)' : 'var(--border)',
+                                                    color: reg.status === 'checked_in' ? 'black' : 'white',
+                                                    marginLeft: 0
+                                                }}>
+                                                    {reg.status}
+                                                </span>
+                                            </div>
+                                            <div className="monospaced" style={{ fontSize: '10px', opacity: 0.6 }}>
+                                                {new Date(reg.created_at).toLocaleString()}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="monospaced" style={{ marginTop: '20px', fontSize: '10px', opacity: 0.5, textAlign: 'right' }}>
+                                TOTAL_RECORDS: {activityRegistrations.length}
+                            </div>
+                        </motion.div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

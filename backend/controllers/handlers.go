@@ -347,7 +347,7 @@ func HandleActivityRegistrations(w http.ResponseWriter, r *http.Request) {
 
 	var regs []models.ActivityRegistration
 	// Preload User if we want more details, but UserUSN is already on the struct
-	if err := database.DB.Preload("User").Where("activity_id = ?", activityID).Find(&regs).Error; err != nil {
+	if err := database.DB.Where("activity_id = ?", activityID).Find(&regs).Error; err != nil {
 		http.Error(w, "Failed to fetch registrations", http.StatusInternalServerError)
 		return
 	}
