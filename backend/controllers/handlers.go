@@ -324,6 +324,37 @@ func HandleEventRegistrations(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(regs)
 }
 
+func HandleActivityRegistrations(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := getTokenFromRequest(r)
+	role := helpers.GetRoleFromToken(token)
+
+	// Admin view only for now
+	if role != "admin" {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
+	activityID := r.URL.Query().Get("activity_id")
+	if activityID == "" {
+		http.Error(w, "Activity ID required", http.StatusBadRequest)
+		return
+	}
+
+	var regs []models.ActivityRegistration
+	// Preload User if we want more details, but UserUSN is already on the struct
+	if err := database.DB.Preload("User").Where("activity_id = ?", activityID).Find(&regs).Error; err != nil {
+		http.Error(w, "Failed to fetch registrations", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(regs)
+}
+
 func HandleEventCheckIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

@@ -10,6 +10,8 @@ const AdminDashboard = ({ user }) => {
     const [groups, setGroups] = useState([]);
     const [activities, setActivities] = useState([]);
     const [registrations, setRegistrations] = useState({});
+    const [viewingParticipants, setViewingParticipants] = useState(null); // Activity ID
+    const [activityRegistrations, setActivityRegistrations] = useState([]);
 
     // Form states
     const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
@@ -121,6 +123,20 @@ const AdminDashboard = ({ user }) => {
         const link = `${window.location.origin}/room/${roomId}`;
         navigator.clipboard.writeText(link);
         alert('Invite link copied to clipboard!');
+    };
+
+    const fetchActivityRegistrations = async (activityId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/activities/registrations?activity_id=${activityId}`, {
+                headers: { Authorization: token }
+            });
+            setActivityRegistrations(res.data || []);
+            setViewingParticipants(activityId);
+        } catch (error) {
+            console.error("Failed to fetch activity registrations", error);
+            alert("Failed to load participants");
+        }
     };
 
     return (
@@ -377,6 +393,13 @@ const AdminDashboard = ({ user }) => {
                                     </div>
                                     <div className="flex gap-2">
                                         <div className="tag-zip">ACTIVITY</div>
+                                        <button
+                                            onClick={() => fetchActivityRegistrations(activity.id)}
+                                            className="btn-industrial"
+                                            style={{ padding: '6px 12px', fontSize: '9px', marginLeft: '10px' }}
+                                        >
+                                            "PARTICIPANTS"
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -422,6 +445,67 @@ const AdminDashboard = ({ user }) => {
             )}
 
             <div className="cross-hatch" style={{ height: '20px', width: '100%', marginTop: '60px', opacity: 0.1 }}></div>
+
+            {/* PARTICIPANTS MODAL */}
+            {viewingParticipants && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="card-industrial"
+                        style={{ width: '90%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--bg-card)' }}
+                    >
+                        <div className="flex-between" style={{ marginBottom: '20px' }}>
+                            <h3 className="caps">"ACTIVITY_LOG"</h3>
+                            <button onClick={() => setViewingParticipants(null)} className="btn-industrial" style={{ padding: '5px 10px' }}>CLOSE</button>
+                        </div>
+
+                        {activityRegistrations.length === 0 ? (
+                            <p className="monospaced" style={{ opacity: 0.5, textAlign: 'center', padding: '40px' }}>NO_DATA_FOUND</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px', background: 'var(--black)', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                    <div>USER_USN</div>
+                                    <div>STATUS</div>
+                                    <div>TIMESTAMP</div>
+                                </div>
+                                {activityRegistrations.map((reg) => (
+                                    <div key={reg.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '15px', background: 'var(--industrial-gray)', borderBottom: '1px solid var(--border)' }}>
+                                        <div className="monospaced" style={{ fontWeight: 'bold' }}>{reg.user_usn || "N/A"}</div>
+                                        <div>
+                                            <span className="tag-zip" style={{
+                                                background: reg.status === 'checked_in' ? 'var(--safety-yellow)' : 'var(--border)',
+                                                color: reg.status === 'checked_in' ? 'black' : 'white',
+                                                marginLeft: 0
+                                            }}>
+                                                {reg.status}
+                                            </span>
+                                        </div>
+                                        <div className="monospaced" style={{ fontSize: '10px', opacity: 0.6 }}>
+                                            {new Date(reg.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="monospaced" style={{ marginTop: '20px', fontSize: '10px', opacity: 0.5, textAlign: 'right' }}>
+                            TOTAL_RECORDS: {activityRegistrations.length}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 };
