@@ -51,6 +51,8 @@ const Explore = ({ user }) => {
     }, []);
 
     const activeRooms = rooms.filter(r => !r.is_closed);
+    // Filter events for the last 24 hours and future
+    const ongoingEvents = events.filter(e => new Date(e.event_date) > new Date(Date.now() - 86400000)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     return (
         <div className="container fade-in">
@@ -113,6 +115,62 @@ const Explore = ({ user }) => {
                                         <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>
                                             {room.timer_minutes}M SESSION
                                         </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* ONGOING EVENTS SECTION */}
+            <section style={{ marginBottom: '80px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"ONGOING_EVENTS"</h2>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
+                    <div className="monospaced" style={{ fontSize: '10px', opacity: 0.4 }}>{ongoingEvents.length} SCHEDULED</div>
+                </div>
+
+                {ongoingEvents.length === 0 ? (
+                    <div style={{ padding: '32px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontFamily: 'monospace', fontSize: '12px', opacity: 0.5 }}>
+                        // NO EVENTS SCHEDULED //
+                    </div>
+                ) : (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                        gap: '24px'
+                    }}>
+                        {ongoingEvents.map((event) => (
+                            <Link to={`/event/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <div className="card-industrial" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                        <div className="tag-zip" style={{ background: 'var(--safety-orange)', color: 'black' }}>
+                                            {event.category || 'EVENT'}
+                                        </div>
+                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4 }}>
+                                            {new Date(event.event_date).toLocaleDateString()}
+                                        </div>
+                                    </div>
+
+                                    <h3 className="caps" style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{event.title}</h3>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', opacity: 0.6 }}>
+                                        <MapPin size={12} />
+                                        <span className="monospaced" style={{ fontSize: '10px' }}>{event.location || 'TBA'}</span>
+                                    </div>
+
+                                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Clock size={10} />
+                                            {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                        {event.capacity > 0 && (
+                                            <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Users size={10} />
+                                                CAP: {event.capacity}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </Link>
