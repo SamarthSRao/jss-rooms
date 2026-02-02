@@ -327,3 +327,15 @@ body {
     padding: 15px 20px !important;
   }
 }
+
+/* UTILITY: HIDE SCROLLBAR */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

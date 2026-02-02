@@ -52,7 +52,22 @@ const Explore = ({ user }) => {
 
     const activeRooms = rooms.filter(r => !r.is_closed);
     // Filter events for the last 24 hours and future
-    const ongoingEvents = events.filter(e => new Date(e.event_date) > new Date(Date.now() - 86400000)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+    const dbEvents = events.filter(e => new Date(e.event_date) > new Date(Date.now() - 86400000)).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+
+    // PREVIEW EVENT FOR VISUALIZATION
+    const ongoingEvents = [
+        {
+            id: 'preview-aikyam',
+            title: 'AIKYAM 2025',
+            description: '24 Hour Offline Hackathon presented by Dept of CSE (AI & ML). Prize Pool: 30K',
+            category: 'HACKATHON',
+            event_date: new Date('2025-03-06T09:00:00').toISOString(),
+            location: 'JSSATE-B',
+            capacity: 100,
+            image_url: '/aikyam_poster.jpg'
+        },
+        ...dbEvents
+    ];
 
     return (
         <div className="container fade-in">
@@ -136,41 +151,61 @@ const Explore = ({ user }) => {
                         // NO EVENTS SCHEDULED //
                     </div>
                 ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
+                    <div className="hide-scrollbar" style={{
+                        display: 'flex',
+                        gap: '24px',
+                        overflowX: 'auto',
+                        paddingBottom: '20px',
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch'
                     }}>
                         {ongoingEvents.map((event) => (
-                            <Link to={`/event/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className="card-industrial" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                                        <div className="tag-zip" style={{ background: 'var(--safety-orange)', color: 'black' }}>
-                                            {event.category || 'EVENT'}
+                            <Link to={`/event/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit', minWidth: '280px', scrollSnapAlign: 'start' }}>
+                                <div className="card-industrial" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    {/* Image Container - Vertical Aspect Ratio */}
+                                    <div style={{
+                                        width: '100%',
+                                        aspectRatio: '3/4',
+                                        background: event.image_url ? `url(${event.image_url})` : '#0a0a0a',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        position: 'relative',
+                                        borderBottom: '1px solid var(--border)'
+                                    }}>
+                                        {!event.image_url && (
+                                            <div className="cross-hatch" style={{ width: '100%', height: '100%', opacity: 0.1 }}></div>
+                                        )}
+                                        <div style={{ position: 'absolute', top: 12, left: 12 }}>
+                                            <div className="tag-zip" style={{ background: 'var(--safety-orange)', color: 'black' }}>
+                                                {event.category || 'EVENT'}
+                                            </div>
                                         </div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4 }}>
+                                    </div>
+
+                                    <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-card)' }}>
+                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4, marginBottom: '8px' }}>
                                             {new Date(event.event_date).toLocaleDateString()}
                                         </div>
-                                    </div>
 
-                                    <h3 className="caps" style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{event.title}</h3>
+                                        <h3 className="caps" style={{ fontSize: '1.4rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{event.title}</h3>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', opacity: 0.6 }}>
-                                        <MapPin size={12} />
-                                        <span className="monospaced" style={{ fontSize: '10px' }}>{event.location || 'TBA'}</span>
-                                    </div>
-
-                                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Clock size={10} />
-                                            {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', opacity: 0.6 }}>
+                                            <MapPin size={12} />
+                                            <span className="monospaced" style={{ fontSize: '10px' }}>{event.location || 'TBA'}</span>
                                         </div>
-                                        {event.capacity > 0 && (
+
+                                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                                             <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                <Users size={10} />
-                                                CAP: {event.capacity}
+                                                <Clock size={10} />
+                                                {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
-                                        )}
+                                            {event.capacity > 0 && (
+                                                <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Users size={10} />
+                                                    CAP: {event.capacity}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </Link>
@@ -186,77 +221,69 @@ const Explore = ({ user }) => {
                     <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
-                    {activities.map((activity, idx) => {
+                <div className="hide-scrollbar" style={{
+                    display: 'flex',
+                    gap: '24px',
+                    overflowX: 'auto',
+                    paddingBottom: '20px',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch'
+                }}>
+                    {activities.map((activity) => {
                         const parentEvent = events.find(e => e.id === activity.event_id);
 
                         return (
-                            <div key={activity.id} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                                {/* Activity Card reusing Event styling */}
-                                <Link to={`/activity/${activity.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.08 }}
-                                        className="card-industrial"
-                                        style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)' }}
-                                    >
-                                        <div style={{ height: '280px', overflow: 'hidden', position: 'relative', background: '#0a0a0a' }}>
-                                            {activity.image_url ? (
-                                                <img
-                                                    src={activity.image_url}
-                                                    alt=""
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
-                                                />
-                                            ) : (
-                                                <div className="cross-hatch" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1 }}>
-                                                    <Zap size={32} />
+                            <Link to={`/activity/${activity.id}`} key={activity.id} style={{ textDecoration: 'none', color: 'inherit', minWidth: '280px', scrollSnapAlign: 'start' }}>
+                                <div className="card-industrial" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    <div style={{
+                                        width: '100%',
+                                        aspectRatio: '3/4',
+                                        background: activity.image_url ? `url(${activity.image_url})` : '#0a0a0a',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        position: 'relative',
+                                        borderBottom: '1px solid var(--border)'
+                                    }}>
+                                        {!activity.image_url && (
+                                            <div className="cross-hatch" style={{ width: '100%', height: '100%', opacity: 0.1 }}></div>
+                                        )}
+
+                                        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <div className="tag-zip" style={{ background: 'var(--blueprint-blue)', color: 'white' }}>
+                                                ACTIVITY
+                                            </div>
+                                            {parentEvent && (
+                                                <div className="monospaced caps" style={{ background: 'rgba(0,0,0,0.8)', padding: '2px 6px', fontSize: '8px', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                                                    {parentEvent.title}
                                                 </div>
                                             )}
+                                        </div>
+                                    </div>
 
-                                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #000, transparent)', opacity: 0.6 }}></div>
-
-                                            <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                                                {parentEvent && (
-                                                    <div className="monospaced caps" style={{ background: 'rgba(255, 255, 255, 0.9)', padding: '4px 8px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px', color: '#000', fontWeight: 'bold' }}>
-                                                        EVENT: {parentEvent.title}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div style={{ position: 'absolute', bottom: '24px', left: '24px', right: '24px' }}>
-                                                <h3 className="caps" style={{ fontSize: '3rem', fontWeight: '900', lineHeight: 1, marginBottom: '8px' }}>
-                                                    {activity.title}
-                                                </h3>
-                                                <div className="monospaced" style={{ fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '16px', opacity: 0.8 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <Calendar size={12} />
-                                                        {new Date(activity.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <Clock size={12} />
-                                                        {new Date(activity.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-card)' }}>
+                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4, marginBottom: '8px' }}>
+                                            {new Date(activity.start_time).toLocaleDateString()}
                                         </div>
 
-                                        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <MapPin size={12} style={{ opacity: 0.4 }} />
-                                                    <span className="monospaced caps" style={{ fontSize: '9px', opacity: 0.7, letterSpacing: '0.05em' }}>
-                                                        {activity.location || 'CAMPUS'}
-                                                    </span>
-                                                </div>
+                                        <h3 className="caps" style={{ fontSize: '1.4rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{activity.title}</h3>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', opacity: 0.6 }}>
+                                            <MapPin size={12} />
+                                            <span className="monospaced" style={{ fontSize: '10px' }}>{activity.location || 'CAMPUS'}</span>
+                                        </div>
+
+                                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div className="monospaced" style={{ fontSize: '9px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Clock size={10} />
+                                                {new Date(activity.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
-                                            <div className="monospaced" style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                                VIEW DETAILS <ArrowRight size={12} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+                                            <div className="monospaced" style={{ fontSize: '9px', fontWeight: 'bold' }}>
+                                                VIEW <ArrowRight size={10} style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                                             </div>
                                         </div>
-                                    </motion.div>
-                                </Link>
-                            </div>
+                                    </div>
+                                </div>
+                            </Link>
                         );
                     })}
                 </div>
