@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import EventDetails from './pages/EventDetails';
 import ActivityDetails from './pages/ActivityDetails';
 import CheckIn from './pages/CheckIn';
+import LandingPage from './pages/LandingPage';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -42,7 +43,7 @@ function App() {
           <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard user={user} /> : <Navigate to="/explore" />} />
           <Route path="/admin/checkin" element={user?.role === 'admin' ? <CheckIn /> : <Navigate to="/explore" />} />
-          <Route path="/" element={<Navigate to="/explore" />} />
+          <Route path="/" element={<LandingPage />} />
         </Routes>
 
         {/* SYSTEM STATUS FEEDBACK (VIRGIL SIGNATURE) */}
