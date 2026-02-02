@@ -81,14 +81,15 @@ const LandingPage = () => {
             ref={containerRef}
             style={{
                 position: 'relative',
-                height: '100vh',
+                minHeight: '100vh', // Allow scrolling if needed
                 width: '100vw',
-                overflow: 'hidden',
+                overflowX: 'hidden', // Prevent horizontal scroll only
+                overflowY: 'auto',   // Allow vertical scroll
                 backgroundColor: 'var(--bg-main)',
                 color: 'var(--text-main)',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
+                justifyContent: 'space-between', // Space out header/content/footer
                 alignItems: 'center'
             }}
         >
@@ -129,7 +130,14 @@ const LandingPage = () => {
             }}></div>
 
             {/* CONTENT */}
-            <div style={{ zIndex: 10, textAlign: 'center', padding: '20px', maxWidth: '1200px', width: '100%' }}>
+            <div style={{
+                zIndex: 10,
+                textAlign: 'center',
+                padding: '100px 20px 40px', // More top padding
+                maxWidth: '1200px',
+                width: '100%',
+                flex: '1' // Allow this to take up available space
+            }}>
                 <div className="tag-zip" style={{ marginBottom: '20px', display: 'inline-flex' }}>
                     SYSTEM_READY
                 </div>
@@ -213,31 +221,35 @@ const LandingPage = () => {
             </div>
 
             {/* FOOTER METADATA */}
-            <div ref={footerRef} className="monospaced" style={{
-                position: 'absolute',
-                bottom: '40px',
-                left: '40px',
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                zIndex: 10
-            }}>
-                <p>FIG. 1.0 "LANDING"</p>
-                <p>LOC: 12.9716° N, 77.5946° E</p>
-                <p>SYS: ONLINE</p>
-            </div>
-
-            <div className="monospaced" style={{
-                position: 'absolute',
-                bottom: '40px',
-                right: '40px',
-                fontSize: '10px',
-                color: 'var(--text-muted)',
+            {/* FOOTER METADATA - Responsive positioning */}
+            <div style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '40px',
+                marginTop: 'auto', // Pushes to bottom in flex container
                 zIndex: 10,
-                textAlign: 'right'
+                pointerEvents: 'none' // Allow clicks to pass through if overlays
             }}>
-                <p>EST. 2026</p>
-                <p>JSS INSTITUTIONS</p>
-                <p>V. 2.1.0 RC</p>
+                <div ref={footerRef} className="monospaced" style={{
+                    fontSize: '10px',
+                    color: 'var(--text-muted)',
+                    textAlign: 'left'
+                }}>
+                    <p>FIG. 1.0 "LANDING"</p>
+                    <p>LOC: 12.9716° N, 77.5946° E</p>
+                    <p>SYS: ONLINE</p>
+                </div>
+
+                <div className="monospaced" style={{
+                    fontSize: '10px',
+                    color: 'var(--text-muted)',
+                    textAlign: 'right'
+                }}>
+                    <p>EST. 2026</p>
+                    <p>JSS INSTITUTIONS</p>
+                    <p>V. 2.1.0 RC</p>
+                </div>
             </div>
         </div>
     );
