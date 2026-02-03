@@ -66,15 +66,7 @@ const LandingPage = () => {
     }, []);
 
     // Technical Background Patterns
-    const gridStyle = {
-        backgroundImage: `
-            linear-gradient(to right, #222 1px, transparent 1px),
-            linear-gradient(to bottom, #222 1px, transparent 1px)
-        `,
-        backgroundSize: '40px 40px',
-        maskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)'
-    };
+
 
     return (
         <div
@@ -94,16 +86,12 @@ const LandingPage = () => {
             }}
         >
             {/* NEW BACKGROUND: TECHNICAL GRID */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                zIndex: 0,
-                opacity: 0.4,
-                ...gridStyle
-            }}></div>
+            {/* DYNAMIC BACKGROUND ELEMENTS */}
+            <div className="bg-noise"></div>
+            <div className="bg-cyber-grid"></div>
+            <div className="scanline"></div>
+            <div className="shard shard-orange"></div>
+            <div className="shard shard-blue"></div>
 
             {/* VIGNETTE */}
             <div style={{
