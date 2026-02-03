@@ -48,6 +48,7 @@ type Message struct {
 	RoomID    string    `gorm:"index" json:"room_id"` // Matches Room.ID string
 	UserID    uuid.UUID `gorm:"type:uuid" json:"user_id"`
 	UserUSN   string    `json:"user_usn"`
+	UserName  string    `json:"user_name"`
 	Content   string    `gorm:"not null" json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }

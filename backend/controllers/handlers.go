@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/jssrooms/backend/helpers"
 	"github.com/jssrooms/backend/models"
 	"github.com/jssrooms/backend/ws"
+	"gorm.io/gorm"
 )
 
 func getTokenFromRequest(r *http.Request) string {
@@ -142,6 +144,8 @@ func HandleEvents(w http.ResponseWriter, r *http.Request) {
 func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	roomID := r.URL.Query().Get("room")
 	userUSN := r.URL.Query().Get("usn")
+	// If name is passed in query, use it, otherwise we'll fetch it
+	userName := r.URL.Query().Get("name")
 	userIDStr := r.URL.Query().Get("userId")
 	userID, _ := uuid.Parse(userIDStr)
 
@@ -210,10 +214,11 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 			// Save to DB
 			msg := models.Message{
-				RoomID:  roomID,
-				UserID:  userID,
-				UserUSN: userUSN,
-				Content: string(message),
+				RoomID:   roomID,
+				UserID:   userID,
+				UserUSN:  userUSN,
+				UserName: userName, // Populate name
+				Content:  string(message),
 			}
 			database.DB.Create(&msg)
 
@@ -464,36 +469,91 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		ActivityID uuid.UUID `json:"activity_id"`
+		USNs       []string  `json:"usns"` // Optional: register others by USN
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
-	// Double check user exists to get USN
-	var user models.User
-	if err := database.DB.First(&user, "id = ?", userID).Error; err != nil {
+	// Double check requesting user exists
+	var currentUser models.User
+	if err := database.DB.First(&currentUser, "id = ?", userID).Error; err != nil {
 		http.Error(w, "User not found", http.StatusBadRequest)
 		return
 	}
 
-	// Check if already registered
-	var existing models.ActivityRegistration
-	if err := database.DB.Where("activity_id = ? AND user_id = ?", input.ActivityID, userID).First(&existing).Error; err == nil {
-		http.Error(w, "Already registered for this activity", http.StatusConflict)
+	// Prepare list of USNs to register
+	// Always include the current user unless they explicitly excluded themselves (which isn't really supported by UI yet, so let's default to including them if USNs is empty, or if they are in the list)
+	// Actually, easier logic:
+	// If input.USNs is empty, just register current user.
+	// If input.USNs has values, register ALL of them.
+	// BUT, user might want to add friends + themselves.
+	// Let's assume the frontend sends the complete list of USNs to register.
+	// If frontend sends empty USNs list, we fallback to just the current user.
+
+	targetUSNs := input.USNs
+	if len(targetUSNs) == 0 {
+		targetUSNs = []string{currentUser.USN}
+	} else {
+		// Enforce limit of 4 additional people (so max 5 total in one go)
+		if len(targetUSNs) > 5 {
+			http.Error(w, "Cannot register more than 5 people at once", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Use Transaction to ensure all-or-nothing registration
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		for _, usn := range targetUSNs {
+			usn = strings.TrimSpace(usn)
+			if usn == "" {
+				continue
+			}
+
+			// Find user by USN (Case Insensitive)
+			var targetUser models.User
+			if err := tx.Where("LOWER(usn) = LOWER(?)", usn).First(&targetUser).Error; err != nil {
+				return fmt.Errorf("USN %s not found", usn)
+			}
+
+			// Check if already registered
+			var existing models.ActivityRegistration
+			if err := tx.Where("activity_id = ? AND user_id = ?", input.ActivityID, targetUser.ID).First(&existing).Error; err == nil {
+				// Already registered, just skip
+				continue
+			}
+
+			reg := models.ActivityRegistration{
+				ActivityID: input.ActivityID,
+				UserID:     targetUser.ID,
+				UserUSN:    targetUser.USN,
+				Status:     "registered",
+			}
+			if err := tx.Create(&reg).Error; err != nil {
+				return fmt.Errorf("Failed to register %s", usn)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		// Return the specific error message to the frontend
+		// Format generic error response to match frontend expectations
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"message": err.Error(),
+			"errors":  []string{err.Error()},
+		})
 		return
 	}
 
-	reg := models.ActivityRegistration{
-		ActivityID: input.ActivityID,
-		UserID:     userID,
-		UserUSN:    user.USN,
-		Status:     "registered",
+	response := map[string]interface{}{
+		"success_count": len(targetUSNs),
+		"message":       "Registration process completed successfully",
 	}
-	if err := database.DB.Create(&reg).Error; err != nil {
-		http.Error(w, "Registration failed", http.StatusInternalServerError)
-		return
-	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 
-	json.NewEncoder(w).Encode(reg)
 }

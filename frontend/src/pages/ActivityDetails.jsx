@@ -14,6 +14,8 @@ const ActivityDetails = ({ user }) => {
     const [registration, setRegistration] = useState(null);
     const [loading, setLoading] = useState(true);
     const [registering, setRegistering] = useState(false);
+    const [additionalUSNs, setAdditionalUSNs] = useState(['', '', '', '']);
+    const [showUSNInputs, setShowUSNInputs] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -71,12 +73,44 @@ const ActivityDetails = ({ user }) => {
         setRegistering(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`${API_BASE_URL}/activities/register`, { activity_id: id }, {
+
+            // Filter out empty strings from additionalUSNs
+            const friends = additionalUSNs.filter(usn => usn.trim() !== '');
+            // Include current user implicitly (backend handles this if list is empty, but if we send list, we must include current user if we want them registered too?
+            // Wait, my backend logic says: "If input.USNs is empty, just register current user. If input.USNs has values, register ALL of them."
+            // So if I add friends, I MUST add myself to the list if I want to join too.
+            // Let's make sure we include the current USER's USN if they are registering group.
+            // Actually, better UI: "Register Myself" + "Add Friends".
+            // If I click "Register", I expect ME to be registered + any friends I added.
+
+            const usnsToRegister = [user.usn, ...friends];
+
+            const response = await axios.post(`${API_BASE_URL}/activities/register`, {
+                activity_id: id,
+                usns: usnsToRegister
+            }, {
                 headers: { Authorization: token }
             });
+
+            if (response.data.errors && response.data.errors.length > 0) {
+                alert("REGISTRATION COMPLETE WITH ERRORS:\n" + response.data.errors.join("\n"));
+            } else if (response.data.success_count > 0) {
+                // Optional: success message or just refresh
+            }
+
             await checkRegistration();
         } catch (err) {
-            alert(err.response?.data || "REGISTRATION_FAILED");
+            let msg = "REGISTRATION_FAILED";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'string') {
+                    msg = err.response.data;
+                } else if (err.response.data.errors) {
+                    msg = "FAILED:\n" + err.response.data.errors.join("\n");
+                } else if (err.response.data.message) {
+                    msg = err.response.data.message;
+                }
+            }
+            alert(msg);
         } finally {
             setRegistering(false);
         }
@@ -281,6 +315,57 @@ const ActivityDetails = ({ user }) => {
                                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite' }}></div>
                                                 </div>
                                             </div>
+
+                                            {/* Group Registration UI */}
+                                            <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                                                <button
+                                                    onClick={() => setShowUSNInputs(!showUSNInputs)}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px dashed rgba(255,255,255,0.3)',
+                                                        color: '#aaa',
+                                                        padding: '12px',
+                                                        width: '100%',
+                                                        fontSize: '11px',
+                                                        marginBottom: '16px',
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'monospace'
+                                                    }}
+                                                >
+                                                    {showUSNInputs ? "- REMOVE GROUP MEMBERS" : "+ ADD UP TO 4 FRIENDS (USN)"}
+                                                </button>
+
+                                                {showUSNInputs && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.3s ease' }}>
+                                                        {additionalUSNs.map((usn, idx) => (
+                                                            <input
+                                                                key={idx}
+                                                                type="text"
+                                                                placeholder={`FRIEND'S USN #${idx + 1}`}
+                                                                value={usn}
+                                                                onChange={(e) => {
+                                                                    const newUSNs = [...additionalUSNs];
+                                                                    newUSNs[idx] = e.target.value;
+                                                                    setAdditionalUSNs(newUSNs);
+                                                                }}
+                                                                style={{
+                                                                    background: '#18181b',
+                                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                                    color: '#fff',
+                                                                    padding: '10px',
+                                                                    fontSize: '12px',
+                                                                    fontFamily: 'monospace',
+                                                                    textTransform: 'uppercase'
+                                                                }}
+                                                            />
+                                                        ))}
+                                                        <div style={{ fontSize: '9px', opacity: 0.5, marginTop: '4px', fontStyle: 'italic' }}>
+                                                            * YOU WILL ALSO BE REGISTERED AUTOMATICALLY
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             <button
                                                 onClick={handleRegister}
                                                 disabled={registering}

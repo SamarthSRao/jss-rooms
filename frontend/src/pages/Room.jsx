@@ -12,7 +12,7 @@ const Room = ({ user }) => {
     const scrollRef = useRef();
 
     useEffect(() => {
-        const ws = new WebSocket(`${import.meta.env.VITE_WS_BASE_URL}/ws?room=${id}&usn=${user.usn}&userId=${user.id}`);
+        const ws = new WebSocket(`${import.meta.env.VITE_WS_BASE_URL}/ws?room=${id}&usn=${user.usn}&userId=${user.id}&name=${encodeURIComponent(user.name || '')}`);
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
@@ -76,7 +76,7 @@ const Room = ({ user }) => {
                             }}
                         >
                             <div className="monospaced caps" style={{ fontSize: '9px', opacity: 0.5, marginBottom: '6px' }}>
-                                {msg.user_usn} {msg.user_id === user.id ? '// AUTHOR' : '// SENDER'}
+                                {msg.user_name || msg.user_usn} {msg.user_id === user.id ? '// AUTHOR' : '// SENDER'}
                             </div>
                             <div style={{
                                 padding: '12px 20px',
