@@ -2,7 +2,74 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Clock, Calendar, ArrowRight, Zap, Terminal } from 'lucide-react';
+import { MapPin, Users, Clock, Calendar, ArrowRight, Zap, Terminal, ChevronRight } from 'lucide-react';
+
+const ScrollSection = ({ children, className }) => {
+    const containerRef = React.useRef(null);
+
+    const handleScroll = (direction) => {
+        if (containerRef.current) {
+            const scrollAmount = direction === 'right' ? 300 : -300;
+            containerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <div style={{ position: 'relative', group: 'scroll-group' }}>
+            <div
+                ref={containerRef}
+                className={`hide-scrollbar ${className || ''}`}
+                style={{
+                    display: 'flex',
+                    gap: '24px',
+                    overflowX: 'auto',
+                    paddingBottom: '20px',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch'
+                }}
+            >
+                {children}
+            </div>
+
+            {/* Right Scroll Gradient & Button */}
+            <div style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 20, // Match paddingBottom
+                width: '100px',
+                background: 'linear-gradient(to right, transparent, var(--bg-main))',
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                paddingRight: '10px'
+            }}>
+                <button
+                    onClick={() => handleScroll('right')}
+                    style={{
+                        pointerEvents: 'auto',
+                        background: 'rgba(24, 24, 27, 0.8)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(4px)',
+                        transition: 'all 0.2s ease'
+                    }}
+                    className="hover-scale"
+                >
+                    <ChevronRight size={20} />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const Explore = ({ user }) => {
     const [rooms, setRooms] = useState([]);
@@ -151,14 +218,7 @@ const Explore = ({ user }) => {
                         // NO EVENTS SCHEDULED //
                     </div>
                 ) : (
-                    <div className="hide-scrollbar" style={{
-                        display: 'flex',
-                        gap: '24px',
-                        overflowX: 'auto',
-                        paddingBottom: '20px',
-                        scrollSnapType: 'x mandatory',
-                        WebkitOverflowScrolling: 'touch'
-                    }}>
+                    <ScrollSection>
                         {ongoingEvents.map((event) => (
                             <Link to={`/event/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit', minWidth: '280px', scrollSnapAlign: 'start' }}>
                                 <div className="card-industrial" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)' }}>
@@ -210,7 +270,7 @@ const Explore = ({ user }) => {
                                 </div>
                             </Link>
                         ))}
-                    </div>
+                    </ScrollSection>
                 )}
             </section>
 
@@ -221,14 +281,7 @@ const Explore = ({ user }) => {
                     <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
                 </div>
 
-                <div className="hide-scrollbar" style={{
-                    display: 'flex',
-                    gap: '24px',
-                    overflowX: 'auto',
-                    paddingBottom: '20px',
-                    scrollSnapType: 'x mandatory',
-                    WebkitOverflowScrolling: 'touch'
-                }}>
+                <ScrollSection>
                     {activities.map((activity) => {
                         const parentEvent = events.find(e => e.id === activity.event_id);
 
@@ -286,7 +339,7 @@ const Explore = ({ user }) => {
                             </Link>
                         );
                     })}
-                </div>
+                </ScrollSection>
             </section>
 
             <footer style={{ marginTop: '120px', paddingBottom: '40px' }}>

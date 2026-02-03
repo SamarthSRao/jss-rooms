@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Compass, ShieldCheck, LogOut, Code, User, Menu, X } from 'lucide-react';
+import { Compass, ShieldCheck, LogOut, Code, User, Menu, X, ArrowLeft } from 'lucide-react';
 
 const Navbar = ({ user, setUser }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -89,6 +89,24 @@ const Navbar = ({ user, setUser }) => {
             {/* Mobile Menu Overlay */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-menu-content">
+                    <button
+                        onClick={() => setIsMenuOpen(false)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            marginBottom: '32px',
+                            padding: 0
+                        }}
+                    >
+                        <ArrowLeft size={16} />
+                        <span className="monospaced caps" style={{ fontSize: '12px' }}>BACK</span>
+                    </button>
+
                     <Link to="/explore" onClick={() => setIsMenuOpen(false)} className="mobile-link">
                         "EXPLORE"
                     </Link>
