@@ -94,8 +94,8 @@ const ActivityDetails = ({ user }) => {
 
             if (response.data.errors && response.data.errors.length > 0) {
                 alert("REGISTRATION COMPLETE WITH ERRORS:\n" + response.data.errors.join("\n"));
-            } else if (response.data.success_count > 0) {
-                // Optional: success message or just refresh
+            } else if (response.data.registered_usns && response.data.registered_usns.length > 0) {
+                alert("SUCCESSFULLY REGISTERED:\n" + response.data.registered_usns.join("\n"));
             }
 
             await checkRegistration();

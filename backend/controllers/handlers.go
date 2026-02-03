@@ -550,8 +550,9 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]interface{}{
-		"success_count": len(targetUSNs),
-		"message":       "Registration process completed successfully",
+		"success_count":   len(targetUSNs),
+		"registered_usns": targetUSNs,
+		"message":         "Registration process completed successfully",
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
