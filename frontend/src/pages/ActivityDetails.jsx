@@ -265,6 +265,44 @@ const ActivityDetails = ({ user }) => {
                                 </button>
                             </div>
 
+                            {/* MOBILE GROUP REGISTRATION (Visible only if NOT registered) */}
+                            {!isRegistered && (
+                                <div className="mobile-group-reg">
+                                    <button
+                                        className="m-group-toggle"
+                                        onClick={() => setShowUSNInputs(!showUSNInputs)}
+                                    >
+                                        {showUSNInputs ? "Remove Guests" : "Add Guests (Optional)"}
+                                    </button>
+
+                                    {showUSNInputs && (
+                                        <div className="m-group-inputs">
+                                            {additionalUSNs.map((usn, idx) => (
+                                                <input
+                                                    key={idx}
+                                                    type="text"
+                                                    placeholder={`Friend USN #${idx + 1}`}
+                                                    value={usn}
+                                                    onChange={(e) => {
+                                                        const newUSNs = [...additionalUSNs];
+                                                        newUSNs[idx] = e.target.value;
+                                                        setAdditionalUSNs(newUSNs);
+                                                    }}
+                                                    className="m-usn-input"
+                                                />
+                                            ))}
+                                            <div className="m-note">* You and your friends will be registered together.</div>
+                                        </div>
+                                    )}
+
+                                    {registrationMessage && (
+                                        <div className={`m-reg-message ${registrationMessage.type}`}>
+                                            {registrationMessage.text}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* MOBILE TICKET SECTION (Visible only if registered) */}
                             {isRegistered && (
                                 <div className="mobile-ticket-section">
@@ -929,6 +967,70 @@ const ActivityDetails = ({ user }) => {
                          padding: 12px !important;
                          border-radius: 8px;
                     }
+
+
+                    /* Mobile Group Registration Styles */
+                    .mobile-group-reg {
+                        padding: 0 20px 20px;
+                        margin-top: -10px;
+                        animation: fadeIn 0.3s ease;
+                    }
+                    .m-group-toggle {
+                        background: rgba(255,255,255,0.05);
+                        border: 1px dashed rgba(255,255,255,0.2);
+                        color: #aaa;
+                        width: 100%;
+                        padding: 12px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-family: monospace;
+                        margin-bottom: 12px;
+                        cursor: pointer;
+                    }
+                    .m-group-inputs {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        margin-bottom: 16px;
+                    }
+                    .m-usn-input {
+                        width: 100%;
+                        background: #111;
+                        border: 1px solid rgba(255,255,255,0.15);
+                        color: #fff;
+                        padding: 12px;
+                        border-radius: 12px;
+                        font-size: 13px;
+                        font-family: monospace;
+                        text-transform: uppercase;
+                    }
+                    .m-usn-input:focus {
+                        outline: none;
+                        border-color: var(--safety-orange, #ff5f1f);
+                    }
+                    .m-note {
+                        font-size: 10px;
+                        color: #666;
+                        font-style: italic;
+                    }
+                    .m-reg-message {
+                        padding: 12px;
+                        border-radius: 8px;
+                        font-size: 11px;
+                        font-family: monospace;
+                        margin-bottom: 12px;
+                    }
+                    .m-reg-message.success {
+                        background: rgba(34, 197, 94, 0.1);
+                        border: 1px solid #22c55e;
+                        color: #22c55e;
+                    }
+                    .m-reg-message.error {
+                        background: rgba(239, 68, 68, 0.1);
+                        border: 1px solid #ef4444;
+                        color: #ef4444;
+                    }
+
 
                     /* Mobile Ticket Styles */
                     .mobile-ticket-section {
