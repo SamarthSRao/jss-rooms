@@ -93,11 +93,11 @@ type Activity struct {
 
 type ActivityRegistration struct {
 	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	ActivityID uuid.UUID `gorm:"type:uuid;index" json:"activity_id"`
-	Activity   *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
-	UserID     uuid.UUID `gorm:"type:uuid;index" json:"user_id"`
+	ActivityID uuid.UUID `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"activity_id"`
+	UserID     uuid.UUID `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"user_id"`
 	UserUSN    string    `json:"user_usn"`
 	Status     string    `gorm:"default:'registered'" json:"status"`
+	Activity   *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 

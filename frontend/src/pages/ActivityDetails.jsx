@@ -16,6 +16,7 @@ const ActivityDetails = ({ user }) => {
     const [registering, setRegistering] = useState(false);
     const [additionalUSNs, setAdditionalUSNs] = useState(['', '', '', '']);
     const [showUSNInputs, setShowUSNInputs] = useState(false);
+    const [registrationMessage, setRegistrationMessage] = useState(null); // { type: 'success' | 'error', text: string | JSX }
 
     useEffect(() => {
         fetchData();
@@ -71,18 +72,12 @@ const ActivityDetails = ({ user }) => {
 
     const handleRegister = async () => {
         setRegistering(true);
+        setRegistrationMessage(null);
         try {
             const token = localStorage.getItem('token');
 
             // Filter out empty strings from additionalUSNs
             const friends = additionalUSNs.filter(usn => usn.trim() !== '');
-            // Include current user implicitly (backend handles this if list is empty, but if we send list, we must include current user if we want them registered too?
-            // Wait, my backend logic says: "If input.USNs is empty, just register current user. If input.USNs has values, register ALL of them."
-            // So if I add friends, I MUST add myself to the list if I want to join too.
-            // Let's make sure we include the current USER's USN if they are registering group.
-            // Actually, better UI: "Register Myself" + "Add Friends".
-            // If I click "Register", I expect ME to be registered + any friends I added.
-
             const usnsToRegister = [user.usn, ...friends];
 
             const response = await axios.post(`${API_BASE_URL}/activities/register`, {
@@ -93,24 +88,60 @@ const ActivityDetails = ({ user }) => {
             });
 
             if (response.data.errors && response.data.errors.length > 0) {
-                alert("REGISTRATION COMPLETE WITH ERRORS:\n" + response.data.errors.join("\n"));
+                setRegistrationMessage({
+                    type: 'error',
+                    text: (
+                        <div>
+                            <div>REGISTRATION COMPLETE WITH ERRORS:</div>
+                            <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
+                                {response.data.errors.map((err, i) => <li key={i}>{err}</li>)}
+                            </ul>
+                        </div>
+                    )
+                });
             } else if (response.data.registered_usns && response.data.registered_usns.length > 0) {
-                alert("SUCCESSFULLY REGISTERED:\n" + response.data.registered_usns.join("\n"));
+                setRegistrationMessage({
+                    type: 'success',
+                    text: (
+                        <div>
+                            <div>SUCCESSFULLY REGISTERED:</div>
+                            <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
+                                {response.data.registered_usns.map((usn, i) => <li key={i}>{usn}</li>)}
+                            </ul>
+                        </div>
+                    )
+                });
             }
 
             await checkRegistration();
         } catch (err) {
             let msg = "REGISTRATION_FAILED";
+            let details = [];
+
             if (err.response?.data) {
                 if (typeof err.response.data === 'string') {
                     msg = err.response.data;
                 } else if (err.response.data.errors) {
-                    msg = "FAILED:\n" + err.response.data.errors.join("\n");
+                    msg = "FAILED TO REGISTER:";
+                    details = err.response.data.errors;
                 } else if (err.response.data.message) {
                     msg = err.response.data.message;
                 }
             }
-            alert(msg);
+
+            setRegistrationMessage({
+                type: 'error',
+                text: (
+                    <div>
+                        <div>{msg}</div>
+                        {details.length > 0 && (
+                            <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
+                                {details.map((d, i) => <li key={i}>{d}</li>)}
+                            </ul>
+                        )}
+                    </div>
+                )
+            });
         } finally {
             setRegistering(false);
         }
@@ -365,25 +396,43 @@ const ActivityDetails = ({ user }) => {
                                                     </div>
                                                 )}
                                             </div>
+                                            {registrationMessage && (
+                                                <div style={{
+                                                    marginBottom: '24px',
+                                                    padding: '16px',
+                                                    background: registrationMessage.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                    border: `1px solid ${registrationMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
+                                                    color: '#fff',
+                                                    fontSize: '11px',
+                                                    fontFamily: 'monospace',
+                                                    textAlign: 'left',
+                                                    lineHeight: '1.5'
+                                                }}>
+                                                    {registrationMessage.text}
+                                                </div>
+                                            )}
 
-                                            <button
-                                                onClick={handleRegister}
-                                                disabled={registering}
-                                                style={{
-                                                    background: '#fff',
-                                                    color: '#000',
-                                                    border: 'none',
-                                                    padding: '24px',
-                                                    width: '100%',
-                                                    fontSize: '18px',
-                                                    fontWeight: '900',
-                                                    textTransform: 'uppercase',
-                                                    cursor: registering ? 'not-allowed' : 'pointer',
-                                                    opacity: registering ? 0.6 : 1
-                                                }}
-                                            >
-                                                {registering ? '...WAIT' : '"REGISTER NOW"'}
-                                            </button>
+                                            <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+
+                                                <button
+                                                    onClick={handleRegister}
+                                                    disabled={registering}
+                                                    style={{
+                                                        background: '#fff',
+                                                        color: '#000',
+                                                        border: 'none',
+                                                        padding: '24px',
+                                                        width: '100%',
+                                                        fontSize: '18px',
+                                                        fontWeight: '900',
+                                                        textTransform: 'uppercase',
+                                                        cursor: registering ? 'not-allowed' : 'pointer',
+                                                        opacity: registering ? 0.6 : 1
+                                                    }}
+                                                >
+                                                    {registering ? '...WAIT' : '"REGISTER NOW"'}
+                                                </button>
+                                            </div>
                                         </>
                                     ) : (
                                         <div>

@@ -32,7 +32,7 @@ func InitDB() {
 
 	DB = db
 	// Drop tables to fix schema mismatch (UUID vs String) and handle FKs
-	db.Migrator().DropTable(&models.Message{}, &models.Room{})
+	db.Migrator().DropTable(&models.Message{}, &models.Room{}, &models.ActivityRegistration{})
 	if err := db.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.Event{}, &models.Registration{}, &models.Activity{}, &models.ActivityRegistration{}); err != nil {
 		log.Printf("Migration Failed: %v", err)
 	}

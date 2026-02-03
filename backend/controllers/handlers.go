@@ -519,9 +519,19 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 
 			// Check if already registered
 			var existing models.ActivityRegistration
-			if err := tx.Where("activity_id = ? AND user_id = ?", input.ActivityID, targetUser.ID).First(&existing).Error; err == nil {
-				// Already registered, just skip
-				continue
+			checkErr := tx.Where("activity_id = ? AND user_id = ?", input.ActivityID, targetUser.ID).First(&existing).Error
+			if checkErr == nil {
+				// Found existing registration
+				log.Printf("DEBUG: Found existing registration for user %s (ID: %s) in activity %s", usn, targetUser.ID, input.ActivityID)
+
+				// If it's the current requesting user, just skip silenty (allow adding friends)
+				if targetUser.ID == currentUser.ID {
+					continue
+				}
+				// If it's another user (friend), allow them to know it failed
+				return fmt.Errorf("USN %s is already registered for this activity", usn)
+			} else {
+				log.Printf("DEBUG: No existing registration found for user %s (ID: %s) in activity %s. Error: %v", usn, targetUser.ID, input.ActivityID, checkErr)
 			}
 
 			reg := models.ActivityRegistration{
@@ -531,7 +541,15 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 				Status:     "registered",
 			}
 			if err := tx.Create(&reg).Error; err != nil {
-				return fmt.Errorf("Failed to register %s", usn)
+				// Check for unique constraint violation (Postgres error 23505)
+				if strings.Contains(err.Error(), "duplicate key value violates unique constraint") || strings.Contains(err.Error(), "idx_activity_user") {
+					// If it's the current requesting user, just skip silenty
+					if targetUser.ID == currentUser.ID {
+						continue
+					}
+					return fmt.Errorf("USN %s is already registered for this activity", usn)
+				}
+				return fmt.Errorf("Failed to register %s: %v", usn, err)
 			}
 		}
 		return nil
