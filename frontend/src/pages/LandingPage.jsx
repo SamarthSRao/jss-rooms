@@ -178,7 +178,7 @@ const LandingPage = () => {
                         </div>
                         <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>TEMP ROOMS</h3>
                         <p className="monospaced" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Create ephemeral, secure chat rooms for quick collaboration. Auto-expiring sessions to ensure privacy and focus.
+                            Create  secure chat rooms for quick collaboration. Auto-expiring sessions to ensure privacy and focus.
                         </p>
                     </div>
 
