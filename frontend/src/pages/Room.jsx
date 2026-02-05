@@ -37,12 +37,46 @@ const Room = ({ user }) => {
     };
 
     return (
-        <div className="container fade-in" style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="card-industrial" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '0', border: '2px solid var(--white)' }}>
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 1000,
+            background: 'var(--bg-main)',
+            display: 'flex',
+            flexDirection: 'column'
+        }} className="fade-in">
+            <div className="card-industrial" style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                padding: '0',
+                border: 'none',
+                height: '100%'
+            }}>
                 <div className="card-metadata">SRC: WEBSOCKET_ALPHA</div>
 
-                <div style={{ padding: '24px 40px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--industrial-gray)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{
+                    padding: '24px 40px',
+                    borderBottom: '1px solid var(--border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '20px',
+                    background: 'var(--industrial-gray)'
+                }}>
+                    <button
+                        onClick={() => navigate('/explore')}
+                        className="btn-industrial hover-glitch"
+                        style={{ padding: '8px 12px', fontSize: '10px', border: '1px solid var(--border)' }}
+                        data-ref="BACK"
+                    >
+                        <LogOut size={16} style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
                         <Terminal size={20} color="var(--safety-orange)" />
                         <div>
                             <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '-0.02em' }}>"NODE_CHAT"</h2>
@@ -50,15 +84,6 @@ const Room = ({ user }) => {
                         </div>
                         <span className="tag-zip" style={{ background: 'var(--safety-yellow)' }}>ENCRYPTED</span>
                     </div>
-
-                    <button
-                        onClick={() => navigate('/explore')}
-                        className="btn-industrial hover-glitch"
-                        style={{ padding: '8px 20px', fontSize: '10px' }}
-                        data-ref="EXIT_04"
-                    >
-                        "EXIT" <LogOut size={14} />
-                    </button>
                 </div>
 
                 <div style={{ flex: 1, overflowY: 'auto', padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'var(--black)' }} className="cross-hatch">
@@ -119,7 +144,14 @@ const Room = ({ user }) => {
                     </button>
                 </form>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', opacity: 0.4 }} className="monospaced caps">
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '10px 20px',
+                opacity: 0.4,
+                background: 'var(--industrial-gray)',
+                borderTop: '1px solid var(--border)'
+            }} className="monospaced caps">
                 <div style={{ fontSize: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <Activity size={10} /> STREAM_STATUS: NOMINAL
                 </div>
