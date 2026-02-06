@@ -317,7 +317,7 @@ const ActivityDetails = ({ user }) => {
                                                 size={160}
                                                 level="H"
                                                 bgColor="transparent"
-                                                fgColor="#fff"
+                                                fgColor="#000"
                                             />
                                         </div>
                                         <div className="m-ticket-details">
