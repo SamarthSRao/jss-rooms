@@ -86,6 +86,7 @@ type Activity struct {
 	Description string    `json:"description"`
 	ImageUrl    string    `json:"image_url"`
 	Location    string    `json:"location"`
+	ContactNumber string  `json:"contact_number"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	CreatedAt   time.Time `json:"created_at"`

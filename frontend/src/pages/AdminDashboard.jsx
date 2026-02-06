@@ -17,7 +17,7 @@ const AdminDashboard = ({ user }) => {
     const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
     const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '', image_url: '' });
     const [groupForm, setGroupForm] = useState({ name: '', description: '' });
-    const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '' });
+    const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '' });
 
 
 
@@ -89,7 +89,7 @@ const AdminDashboard = ({ user }) => {
             payload,
             { headers: { Authorization: token } }
         );
-        setActivityForm({ title: '', description: '', location: '', start_time: '', image_url: '' });
+        setActivityForm({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '' });
         fetchData();
     };
 
@@ -440,6 +440,10 @@ const AdminDashboard = ({ user }) => {
                                     <div className="input-wrapper">
                                         <label className="input-label">"IMAGE_URL"</label>
                                         <input className="input-industrial" value={activityForm.image_url} onChange={e => setActivityForm({ ...activityForm, image_url: e.target.value })} placeholder="https://..." />
+                                    </div>
+                                    <div className="input-wrapper">
+                                        <label className="input-label">"CONTACT_NUMBER"</label>
+                                        <input className="input-industrial" value={activityForm.contact_number} onChange={e => setActivityForm({ ...activityForm, contact_number: e.target.value })} placeholder="+91..." />
                                     </div>
                                     <div className="input-wrapper">
                                         <label className="input-label">"DESCRIPTION"</label>

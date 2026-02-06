@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Calendar, Users, ArrowLeft, Shield, Ticket, Zap, Share2, MoreHorizontal, Mail, Plus } from 'lucide-react';
+import { MapPin, Calendar, Users, ArrowLeft, Shield, Ticket, Zap, Share2, MoreHorizontal, Mail, Plus, Phone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
@@ -147,6 +147,12 @@ const ActivityDetails = ({ user }) => {
         }
     };
 
+    const handleShare = () => {
+        const text = `Check out this activity: ${activity.title}\n${window.location.href}`;
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    };
+
     if (loading) return (
         <div style={{ background: '#000', color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
             LOADING...
@@ -245,13 +251,13 @@ const ActivityDetails = ({ user }) => {
                                     </div>
                                     <span>{isRegistered ? "Ticket" : "Register"}</span>
                                 </button>
-                                <button className="mobile-action-btn">
+                                <button className="mobile-action-btn" onClick={() => activity.contact_number ? window.open(`tel:${activity.contact_number}`) : alert('No contact number available')}>
                                     <div className="icon-box">
-                                        <Mail size={24} />
+                                        <Phone size={24} />
                                     </div>
                                     <span>Contact</span>
                                 </button>
-                                <button className="mobile-action-btn">
+                                <button className="mobile-action-btn" onClick={handleShare}>
                                     <div className="icon-box">
                                         <Share2 size={24} />
                                     </div>
@@ -362,6 +368,20 @@ const ActivityDetails = ({ user }) => {
                                             </div>
                                         </div>
                                     </div>
+                                    {activity.contact_number && (
+                                        <div className="desktop-meta-item mobile-location-item">
+                                            <div className="meta-label">Organizer Contact</div>
+                                            <div className="meta-value-row">
+                                                <div className="meta-icon-box">
+                                                    <Phone size={24} />
+                                                </div>
+                                                <div>
+                                                    <div className="meta-main-text">{activity.contact_number}</div>
+                                                    <div className="meta-sub-text">OFFICIAL CONTACT</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
