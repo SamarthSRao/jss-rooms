@@ -485,7 +485,7 @@ const ActivityDetails = ({ user }) => {
                     padding: 40px 20px;
                 }
                 
-                .mobile-header, .mobile-title-section, .mobile-action-row {
+                .mobile-header, .mobile-title-section, .mobile-action-row, .mobile-group-reg {
                     display: none;
                 }
 

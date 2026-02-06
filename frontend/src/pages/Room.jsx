@@ -121,7 +121,6 @@ const Room = ({ user }) => {
 
                 <form onSubmit={sendMessage} style={{ padding: '30px 40px', borderTop: '1px solid var(--border)', display: 'flex', gap: '20px', background: 'var(--black)' }}>
                     <div style={{ flex: 1 }}>
-                        <label className="input-label">"INPUT_FIELD"</label>
                         <input
                             type="text"
                             className="input-industrial"
