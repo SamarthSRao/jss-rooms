@@ -39,11 +39,8 @@ const Room = ({ user }) => {
     return (
         <div style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 1000,
+            inset: 0,
+            zIndex: 2000,
             background: 'var(--bg-main)',
             display: 'flex',
             flexDirection: 'column'
