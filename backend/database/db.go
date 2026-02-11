@@ -19,10 +19,21 @@ func InitDB() {
 		log.Println("No .env file found, using system env")
 	}
 
+	// Check for various environment variable names used by different providers
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
+		dsn = os.Getenv("POSTGRES_URL")
+	}
+	if dsn == "" {
+		dsn = os.Getenv("PgConnectionString")
+	}
+
+	if dsn == "" {
 		// Default for local development
+		log.Println("No database environment variable found (DATABASE_URL, POSTGRES_URL, PgConnectionString). Using local default.")
 		dsn = "host=localhost user=postgres password=Strawteddy12 dbname=jssrooms port=5432 sslmode=disable"
+	} else {
+		log.Println("Using database connection string from environment variables")
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

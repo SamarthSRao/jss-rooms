@@ -1,0 +1,19 @@
+# Environment variables
+.env
+.env.*
+
+# Binary
+backend.exe
+main.exe
+*.exe
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+vendor/
+
+# OS Files
+.DS_Store
+Thumbs.db
