@@ -15,9 +15,9 @@ const AdminDashboard = ({ user }) => {
 
     // Form states
     const [roomForm, setRoomForm] = useState({ title: '', description: '', timer_minutes: 30 });
-    const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '', image_url: '' });
+    const [eventForm, setEventForm] = useState({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '', image_url: '', block: 'A', floor: '0', room_no: '100' });
     const [groupForm, setGroupForm] = useState({ name: '', description: '' });
-    const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '' });
+    const [activityForm, setActivityForm] = useState({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '', block: 'A', floor: '0', room_no: '100' });
 
 
 
@@ -74,9 +74,26 @@ const AdminDashboard = ({ user }) => {
 
     const createActivity = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const phoneRegex = /^(\+91[\-\s]?)?[0-9]{10}$/;
+        if (activityForm.contact_number && !phoneRegex.test(activityForm.contact_number)) {
+            alert("INVALID CONTACT NUMBER FORMAT. USE: +91 9876543210 OR 9876543210");
+            return;
+        }
+
+        const roomNum = parseInt(activityForm.room_no);
+        if (roomNum < 100 || roomNum > 450) {
+            alert("ROOM NUMBER MUST BE BETWEEN 100 AND 450");
+            return;
+        }
+
+        const locationStr = `BLOCK ${activityForm.block} - FLOOR ${activityForm.floor} - ROOM ${activityForm.room_no}`;
+
         const token = localStorage.getItem('token');
         const payload = {
             ...activityForm,
+            location: locationStr,
             start_time: new Date(activityForm.start_time).toISOString(),
             end_time: new Date(activityForm.start_time).toISOString()
         };
@@ -89,7 +106,7 @@ const AdminDashboard = ({ user }) => {
             payload,
             { headers: { Authorization: token } }
         );
-        setActivityForm({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '' });
+        setActivityForm({ title: '', description: '', location: '', start_time: '', image_url: '', contact_number: '', block: 'A', floor: '0', room_no: '100' });
         fetchData();
     };
 
@@ -101,12 +118,33 @@ const AdminDashboard = ({ user }) => {
 
     const createEvent = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const phoneRegex = /^(\+91[\-\s]?)?[0-9]{10}$/;
+        if (eventForm.contact_number && !phoneRegex.test(eventForm.contact_number)) {
+            alert("INVALID CONTACT NUMBER FORMAT. USE: +91 9876543210 OR 9876543210");
+            return;
+        }
+
+        if (eventForm.capacity <= 0) {
+            alert("CAPACITY MUST BE A POSITIVE INTEGER");
+            return;
+        }
+
+        const roomNum = parseInt(eventForm.room_no);
+        if (roomNum < 100 || roomNum > 450) {
+            alert("ROOM NUMBER MUST BE BETWEEN 100 AND 450");
+            return;
+        }
+
+        const locationStr = `BLOCK ${eventForm.block} - FLOOR ${eventForm.floor} - ROOM ${eventForm.room_no}`;
+
         const token = localStorage.getItem('token');
         await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/events`,
-            { ...eventForm, event_date: new Date(eventForm.event_date).toISOString(), organizer_id: user.id },
+            { ...eventForm, location: locationStr, event_date: new Date(eventForm.event_date).toISOString(), organizer_id: user.id },
             { headers: { Authorization: token } }
         );
-        setEventForm({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '', image_url: '' });
+        setEventForm({ title: '', description: '', category: 'Workshop', event_date: '', location: '', capacity: 0, contact_number: '', image_url: '', block: 'A', floor: '0', room_no: '100' });
         fetchData();
     };
 
@@ -350,8 +388,30 @@ const AdminDashboard = ({ user }) => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="input-wrapper">
-                                            <label className="input-label">"LOCATION"</label>
-                                            <input className="input-industrial" value={eventForm.location} onChange={e => setEventForm({ ...eventForm, location: e.target.value })} />
+                                            <label className="input-label">"LOCATION (BLOCK / FLOOR / ROOM)"</label>
+                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                <select className="input-industrial" style={{ flex: 1 }} value={eventForm.block} onChange={e => setEventForm({ ...eventForm, block: e.target.value })}>
+                                                    <option value="A">BLOCK A</option>
+                                                    <option value="B">BLOCK B</option>
+                                                    <option value="C">BLOCK C</option>
+                                                </select>
+                                                <select className="input-industrial" style={{ flex: 1 }} value={eventForm.floor} onChange={e => setEventForm({ ...eventForm, floor: e.target.value })}>
+                                                    {[0, 1, 2, 3, 4].map(f => (
+                                                        <option key={f} value={f}>FLOOR {f}</option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="number"
+                                                    className="input-industrial"
+                                                    style={{ flex: 1 }}
+                                                    placeholder="ROOM"
+                                                    min="100"
+                                                    max="450"
+                                                    value={eventForm.room_no}
+                                                    onChange={e => setEventForm({ ...eventForm, room_no: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
                                         </div>
                                         <div className="input-wrapper">
                                             <label className="input-label">"CAPACITY"</label>
@@ -430,8 +490,30 @@ const AdminDashboard = ({ user }) => {
                                         <input className="input-industrial" value={activityForm.title} onChange={e => setActivityForm({ ...activityForm, title: e.target.value })} required />
                                     </div>
                                     <div className="input-wrapper">
-                                        <label className="input-label">"LOCATION"</label>
-                                        <input className="input-industrial" value={activityForm.location} onChange={e => setActivityForm({ ...activityForm, location: e.target.value })} />
+                                        <label className="input-label">"LOCATION (BLOCK / FLOOR / ROOM)"</label>
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <select className="input-industrial" style={{ flex: 1 }} value={activityForm.block} onChange={e => setActivityForm({ ...activityForm, block: e.target.value })}>
+                                                <option value="A">BLOCK A</option>
+                                                <option value="B">BLOCK B</option>
+                                                <option value="C">BLOCK C</option>
+                                            </select>
+                                            <select className="input-industrial" style={{ flex: 1 }} value={activityForm.floor} onChange={e => setActivityForm({ ...activityForm, floor: e.target.value })}>
+                                                {[0, 1, 2, 3, 4].map(f => (
+                                                    <option key={f} value={f}>FLOOR {f}</option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                type="number"
+                                                className="input-industrial"
+                                                style={{ flex: 1 }}
+                                                placeholder="ROOM"
+                                                min="100"
+                                                max="450"
+                                                value={activityForm.room_no}
+                                                onChange={e => setActivityForm({ ...activityForm, room_no: e.target.value })}
+                                                required
+                                            />
+                                        </div>
                                     </div>
                                     <div className="input-wrapper">
                                         <label className="input-label">"DATE & TIME"</label>

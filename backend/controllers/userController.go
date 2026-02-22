@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/jssrooms/backend/database"
@@ -28,6 +29,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if input.USN == "" || input.Password == "" {
 		http.Error(w, "USN and Password are required", http.StatusBadRequest)
+		return
+	}
+
+	// USN Regex Validation
+	usnRegex := regexp.MustCompile(`^1JS\d{2}[A-Z]{2}\d{3}$`)
+	if !usnRegex.MatchString(input.USN) {
+		http.Error(w, "Invalid USN format. Expected: 1JSYYBBSSS", http.StatusBadRequest)
 		return
 	}
 

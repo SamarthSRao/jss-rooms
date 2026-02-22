@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -113,6 +114,18 @@ func HandleEvents(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
+
+		// Validation
+		phoneRegex := regexp.MustCompile(`^(\+91[\-\s]?)?[0-9]{10}$`)
+		if event.ContactNumber != "" && !phoneRegex.MatchString(event.ContactNumber) {
+			http.Error(w, "Invalid contact number format", http.StatusBadRequest)
+			return
+		}
+		if event.Capacity <= 0 {
+			http.Error(w, "Capacity must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		database.DB.Create(&event)
 		json.NewEncoder(w).Encode(event)
 		return
@@ -449,6 +462,14 @@ func HandleActivities(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
+
+		// Validation
+		phoneRegex := regexp.MustCompile(`^(\+91[\-\s]?)?[0-9]{10}$`)
+		if activity.ContactNumber != "" && !phoneRegex.MatchString(activity.ContactNumber) {
+			http.Error(w, "Invalid contact number format", http.StatusBadRequest)
+			return
+		}
+
 		database.DB.Create(&activity)
 		json.NewEncoder(w).Encode(activity)
 	}

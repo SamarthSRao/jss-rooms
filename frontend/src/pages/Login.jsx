@@ -12,6 +12,16 @@ const Login = ({ setUser }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation for registration
+        if (mode === 'register') {
+            const usnRegex = /^1JS\d{2}[A-Z]{2}\d{3}$/;
+            if (!usnRegex.test(usn)) {
+                setError('INVALID USN FORMAT. MUST BE (e.g. 1JS21CS001)');
+                return;
+            }
+        }
+
         setLoading(true);
         setError('');
         try {
