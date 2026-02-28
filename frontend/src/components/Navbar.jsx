@@ -25,17 +25,31 @@ const Navbar = ({ user, setUser }) => {
 
     return (
         <>
-            <nav className="fade-in" style={{ borderBottom: '1px solid var(--border)', marginBottom: '40px', background: 'var(--black)', zIndex: 1000, position: 'relative' }}>
+            <nav className="fade-in" style={{
+                borderBottom: '1px solid var(--border)',
+                marginBottom: '40px',
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                zIndex: 1000,
+                position: 'sticky',
+                top: 0
+            }}>
                 <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 40px' }}>
-                    <Link to="/explore" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1002, position: 'relative' }}>
-                        <div style={{ background: 'var(--white)', padding: '4px', border: '1px solid var(--white)' }}>
-                            <Code size={18} color="black" />
+                    <Link to="/explore" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 1002, position: 'relative' }}>
+                        <div style={{
+                            background: 'var(--accent-purple)',
+                            padding: '6px',
+                            borderRadius: '8px',
+                            boxShadow: '0 0 15px rgba(120, 50, 255, 0.5)'
+                        }}>
+                            <Code size={18} color="white" />
                         </div>
                         <div>
-                            <span className="caps" style={{ fontSize: '1.4rem', letterSpacing: '-0.04em' }}>
-                                "JSS ROOMS"
+                            <span className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: 900 }}>
+                                ANVESHAN
                             </span>
-                            <div className="monospaced" style={{ fontSize: '7px', marginTop: '-4px', opacity: 0.5 }}>©2026 FOR DISPLAY ONLY</div>
+                            <div className="monospaced" style={{ fontSize: '8px', marginTop: '-2px', opacity: 0.6, letterSpacing: '0.2em' }}>2026 EDITION</div>
                         </div>
                     </Link>
 
@@ -71,7 +85,18 @@ const Navbar = ({ user, setUser }) => {
                             <button
                                 onClick={handleLogout}
                                 className="hover-glitch"
-                                style={{ background: 'var(--safety-orange)', border: 'none', color: 'black', cursor: 'pointer', padding: '8px' }}
+                                style={{
+                                    background: 'var(--accent-purple)',
+                                    border: 'none',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    padding: '10px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 0 10px rgba(120, 50, 255, 0.3)'
+                                }}
                             >
                                 <LogOut size={14} strokeWidth={3} />
                             </button>

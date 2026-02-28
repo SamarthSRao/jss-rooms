@@ -89,9 +89,8 @@ const LandingPage = () => {
             {/* DYNAMIC BACKGROUND ELEMENTS */}
             <div className="bg-noise"></div>
             <div className="bg-cyber-grid"></div>
-            <div className="scanline"></div>
-            <div className="shard shard-orange"></div>
-            <div className="shard shard-blue"></div>
+            <div className="shard shard-purple"></div>
+            <div className="shard shard-purple-small"></div>
 
             {/* VIGNETTE */}
             <div style={{
@@ -130,14 +129,15 @@ const LandingPage = () => {
                     SYSTEM_READY
                 </div>
 
-                <h1 ref={titleRef} className="caps quotes" style={{
-                    fontSize: 'clamp(3rem, 8vw, 6rem)',
+                <h1 ref={titleRef} className="caps" style={{
+                    fontSize: 'clamp(3rem, 10vw, 8rem)',
                     lineHeight: 1,
                     marginBottom: '2rem',
-                    letterSpacing: '-0.05em',
-                    fontWeight: 900
+                    letterSpacing: '0.05em',
+                    fontWeight: 200, // Thinner, more futuristic
+                    textShadow: '0 0 20px rgba(255,255,255,0.2)'
                 }}>
-                    JSS ROOMS
+                    ANVESHAN<br /><span style={{ fontWeight: 800 }}>2026</span>
                 </h1>
 
                 <p ref={subtitleRef} className="monospaced" style={{
@@ -154,11 +154,19 @@ const LandingPage = () => {
                 <div ref={ctaRef} style={{ marginBottom: '4rem' }}>
                     <button
                         className="btn-industrial hover-glitch"
-                        data-ref="LOGIN"
+                        data-ref="INITIALIZE"
                         onClick={() => navigate('/login')}
+                        style={{
+                            borderRadius: '99px',
+                            padding: '16px 48px',
+                            borderColor: 'var(--accent-purple)',
+                            background: 'rgba(120, 50, 255, 0.1)',
+                            backdropFilter: 'blur(10px)'
+                        }}
                     >
-                        INITIALIZE <span style={{ fontFamily: 'Arial', marginLeft: '5px' }}>→</span>
+                        INITIALIZE <span style={{ marginLeft: '10px' }}>→</span>
                     </button>
+                    <p style={{ marginTop: '20px', fontSize: '12px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.6)' }} className="caps">Stay Tuned</p>
                 </div>
 
                 {/* FEATURE GRID */}

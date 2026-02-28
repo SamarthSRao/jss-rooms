@@ -39,10 +39,14 @@ const Login = ({ setUser }) => {
     };
 
     return (
-        <div className="cross-hatch" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--black)' }}>
-            <div style={{ position: 'fixed', top: '40px', left: '40px', opacity: 0.3 }} className="monospaced caps">
-                <div>REF: LOGIN_INTERFACE_V2.0</div>
-                <div>C/O 2026 JSS STU.</div>
+        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--black)', position: 'relative', overflow: 'hidden' }}>
+            <div className="bg-noise"></div>
+            <div className="shard shard-purple"></div>
+            <div className="shard shard-purple-small" style={{ opacity: 0.1 }}></div>
+
+            <div style={{ position: 'fixed', top: '40px', left: '40px', opacity: 0.2 }} className="monospaced caps">
+                <div>SYS: AUTHGATE_ANVESHAN_V2.6</div>
+                <div>SECURE CONNECTION: TRUE</div>
             </div>
 
             <div style={{ position: 'fixed', bottom: '40px', right: '40px', opacity: 0.3 }} className="monospaced caps">
@@ -55,25 +59,34 @@ const Login = ({ setUser }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
                 className="card-industrial"
-                style={{ width: '100%', maxWidth: '450px', border: '1px solid var(--white)', padding: '60px 40px' }}
+                style={{
+                    width: '100%',
+                    maxWidth: '450px',
+                    padding: '60px 40px',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    backdropFilter: 'blur(30px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                    zIndex: 10
+                }}
             >
-                <div className="card-metadata">ID: 001-ALPHA</div>
+                <div className="card-metadata" style={{ color: 'var(--accent-purple)' }}>VER: 2.6.0-ALPHA</div>
 
-                <h1 className="caps" style={{ marginBottom: '40px', fontSize: '2.5rem', letterSpacing: '-0.06em', textAlign: 'center' }}>
-                    "SIGN IN"
+                <h1 className="caps" style={{ marginBottom: '40px', fontSize: '2.5rem', letterSpacing: '0.1em', textAlign: 'center', fontWeight: 200 }}>
+                    ANVESHAN<br /><span style={{ fontWeight: 800 }}>SIGN IN</span>
                 </h1>
 
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '40px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '40px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
                     <button
                         onClick={() => setMode('login')}
-                        className={`caps ${mode === 'login' ? '' : 'opacity-30'}`}
-                        style={{ flex: 1, padding: '12px', background: mode === 'login' ? 'var(--white)' : 'transparent', color: mode === 'login' ? 'var(--black)' : 'var(--white)', border: '1px solid var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '11px' }}
-                    > 01 // LOGIN </button>
+                        className={`caps ${mode === 'login' ? '' : 'opacity-60'}`}
+                        style={{ flex: 1, padding: '12px', borderRadius: '8px', background: mode === 'login' ? 'var(--accent-purple)' : 'transparent', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '10px' }}
+                    > LOGIN </button>
                     <button
                         onClick={() => setMode('register')}
-                        className={`caps ${mode === 'register' ? '' : 'opacity-30'}`}
-                        style={{ flex: 1, padding: '12px', background: mode === 'register' ? 'var(--white)' : 'transparent', color: mode === 'register' ? 'var(--black)' : 'var(--white)', border: '1px solid var(--white)', cursor: 'pointer', fontWeight: '900', fontSize: '11px' }}
-                    > 02 // REGISTER </button>
+                        className={`caps ${mode === 'register' ? '' : 'opacity-60'}`}
+                        style={{ flex: 1, padding: '12px', borderRadius: '8px', background: mode === 'register' ? 'var(--accent-purple)' : 'transparent', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '10px' }}
+                    > REGISTER </button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -126,11 +139,20 @@ const Login = ({ setUser }) => {
                     <button
                         type="submit"
                         className="btn-industrial hover-glitch"
-                        style={{ width: '100%', justifyContent: 'center', background: 'var(--white)', color: 'var(--black)', fontSize: '14px' }}
+                        style={{
+                            width: '100%',
+                            justifyContent: 'center',
+                            background: 'var(--accent-purple)',
+                            color: 'var(--white)',
+                            fontSize: '12px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            boxShadow: '0 10px 20px rgba(120, 50, 255, 0.3)'
+                        }}
                         disabled={loading}
                         data-ref="PROC_098"
                     >
-                        {loading ? '...PROCESSING' : (mode === 'login' ? '"ENTER SPACE"' : '"INITIATE"')}
+                        {loading ? 'PROCESSING...' : (mode === 'login' ? 'ENTER ANVESHAN' : 'INITIALIZE ACCOUNT')}
                     </button>
                 </form>
             </motion.div>
