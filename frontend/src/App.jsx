@@ -36,10 +36,10 @@ function App() {
         {user && <Navbar user={user} setUser={setUser} />}
         <Routes>
           <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/explore" />} />
-          <Route path="/explore" element={user ? <Explore user={user} /> : <Navigate to="/login" />} />
+          <Route path="/explore" element={<Explore user={user} />} />
           <Route path="/room/:id" element={user ? <Room user={user} /> : <Navigate to="/login" />} />
-          <Route path="/event/:id" element={user ? <EventDetails user={user} /> : <Navigate to="/login" />} />
-          <Route path="/activity/:id" element={user ? <ActivityDetails user={user} /> : <Navigate to="/login" />} />
+          <Route path="/event/:id" element={<EventDetails user={user} />} />
+          <Route path="/activity/:id" element={<ActivityDetails user={user} />} />
           <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard user={user} /> : <Navigate to="/explore" />} />
           <Route path="/admin/checkin" element={user?.role === 'admin' ? <CheckIn /> : <Navigate to="/explore" />} />

@@ -1,0 +1,67 @@
+# Implementation Plan: Comments and Profile Pages
+
+This plan outlines the steps required to implement a comments system and a user profile page for the hackblog application.
+
+## User Review Required
+
+> [!IMPORTANT]
+> This plan assumes the use of the existing Drizzle ORM and Express backend.
+> The frontend will continue to use React with Vite and Tailwind CSS (or standard CSS as per current project style).
+
+## Proposed Changes
+
+### Backend
+
+#### [MODIFY] [schema.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/backend/lib/db/schema.js)
+- Define a new `comments` table with fields: `id`, `content`, `authorId`, `postId`, `createdAt`.
+- Update relations to include comments for both authors and posts.
+
+#### [NEW] [comments.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/backend/routes/comments.js)
+- Implement `getPostComments`: Fetch all comments for a specific post.
+- Implement `createComment`: Allow authenticated users to post comments.
+- Implement `getUserComments`: Fetch all comments by a specific user.
+
+#### [NEW] [user.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/backend/routes/user.js)
+- Implement `getUserProfile`: Fetch user details along with their activity (posts and comments).
+
+#### [MODIFY] [server.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/backend/server.js)
+- Register new routes for comments and user profiles.
+
+---
+
+### Frontend
+
+#### [MODIFY] [api.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/services/api.js)
+- Add methods to [api.js](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/services/api.js) for:
+    - `commentsAPI.getByPost(postId)`
+    - `commentsAPI.create({ postId, content })`
+    - `userAPI.getProfile(userId)`
+
+#### [NEW] [CommentsPage.jsx](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/pages/CommentsPage.jsx)
+- A page to display comments for a specific story (likely linked from the "comments" link on the main page).
+- Include a form for adding new comments if the user is authenticated.
+
+#### [NEW] [ProfilePage.jsx](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/pages/ProfilePage.jsx)
+- A page to show user information (name, bio, joined date).
+- List the user's recent posts and comments.
+
+#### [MODIFY] [App.jsx](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/App.jsx)
+- Add routes for `/comments/:postId` and `/profile/:userId`.
+
+#### [MODIFY] [mainPage.jsx](file:///c:/Users/samar/OneDrive/Desktop/family/hackblog/frontend/src/mainPage.jsx)
+- Update "comments" links to point to the new `CommentsPage`.
+- Update user links to point to the `ProfilePage`.
+
+## Verification Plan
+
+### Backend Verification
+- Use `curl` or Postman to test new API endpoints:
+    - `GET /api/comments/post/:postId`
+    - `POST /api/comments` (with Auth header)
+    - `GET /api/user/profile/:userId`
+
+### Frontend Verification
+- Manually navigate to the profile page from a user link.
+- Navigate to the comments page from a story link.
+- Attempt to post a comment while logged in and verify it appears.
+- Verify the profile page correctly displays user-specific data.

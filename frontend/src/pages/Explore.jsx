@@ -150,6 +150,11 @@ const Explore = ({ user }) => {
                         ACTIVE_ROOMS & CAMPUS_ACTIVITIES
                     </span>
                     <div style={{ height: '1px', width: '100px', background: 'var(--white)', opacity: 0.2 }}></div>
+                    {!user && (
+                        <Link to="/" className="monospaced" style={{ color: 'var(--accent-purple)', textDecoration: 'none', fontSize: '11px', fontWeight: 'bold' }}>
+                            [ RETURN_HOME ]
+                        </Link>
+                    )}
                     <span className="tag-zip" style={{ background: 'var(--white)', color: 'black', fontSize: '8px' }}>v4.6</span>
                 </div>
             </header>

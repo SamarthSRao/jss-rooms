@@ -11,11 +11,31 @@ const LandingPage = () => {
     const featuresRef = useRef(null);
     const footerRef = useRef(null);
 
+    const [activeFaq, setActiveFaq] = React.useState(null);
+
+    const faqData = [
+        {
+            q: "What is ANVESHAN?",
+            a: "ANVESHAN is a unified campus platform designed to bridge the gap between students, departments, and industrial opportunities through real-time collaboration."
+        },
+        {
+            q: "Who can participate?",
+            a: "All JSS Institutions students are eligible. External participants may join specific open-innovation tracks as per the event protocol."
+        },
+        {
+            q: "How do QR check-ins work?",
+            a: "Your profile generates a unique encrypted token. Scanning this at the venue logs your attendance and unlocks session-specific hardware assets."
+        },
+        {
+            q: "Is there a registration fee?",
+            a: "Core platform access and internal campus events are free. Premium industrial workshops may carry a nominal logistics fee."
+        }
+    ];
+
     // GSAP Animations
     useEffect(() => {
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-        // Changed to Slide UP (y: 50 -> 0) to avoid "floating down" feel
         tl.fromTo(titleRef.current,
             { y: 50, opacity: 0, scale: 0.95 },
             {
@@ -47,52 +67,46 @@ const LandingPage = () => {
                 "-=0.5"
             );
 
-        // Simple mouse parallax (keeping it strict and subtle)
         const handleMouseMove = (e) => {
             const { clientX, clientY } = e;
             const xPos = (clientX / window.innerWidth - 0.5) * 10;
             const yPos = (clientY / window.innerHeight - 0.5) * 10;
 
-            gsap.to(titleRef.current, {
-                x: xPos,
-                y: yPos,
-                duration: 1,
-                ease: "power2.out"
-            });
+            if (titleRef.current) {
+                gsap.to(titleRef.current, {
+                    x: xPos,
+                    y: yPos,
+                    duration: 1,
+                    ease: "power2.out"
+                });
+            }
         };
 
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // Technical Background Patterns
-
-
     return (
         <div
             ref={containerRef}
             style={{
                 position: 'relative',
-                minHeight: '100vh', // Allow scrolling if needed
+                minHeight: '100vh',
                 width: '100vw',
-                overflowX: 'hidden', // Prevent horizontal scroll only
-                overflowY: 'auto',   // Allow vertical scroll
+                overflowX: 'hidden',
+                overflowY: 'auto',
                 backgroundColor: 'var(--bg-main)',
                 color: 'var(--text-main)',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between', // Space out header/content/footer
                 alignItems: 'center'
             }}
         >
-            {/* NEW BACKGROUND: TECHNICAL GRID */}
-            {/* DYNAMIC BACKGROUND ELEMENTS */}
             <div className="bg-noise"></div>
             <div className="bg-cyber-grid"></div>
             <div className="shard shard-purple"></div>
             <div className="shard shard-purple-small"></div>
 
-            {/* VIGNETTE */}
             <div style={{
                 position: 'absolute',
                 top: 0,
@@ -104,7 +118,6 @@ const LandingPage = () => {
                 pointerEvents: 'none'
             }}></div>
 
-            {/* OVERLAY PATTERN - Keep Crosshatch for texture */}
             <div className="cross-hatch" style={{
                 position: 'absolute',
                 top: 0,
@@ -120,10 +133,10 @@ const LandingPage = () => {
             <div style={{
                 zIndex: 10,
                 textAlign: 'center',
-                padding: '100px 20px 40px', // More top padding
+                padding: '100px 20px 40px',
                 maxWidth: '1200px',
                 width: '100%',
-                flex: '1' // Allow this to take up available space
+                flex: '1'
             }}>
                 <div className="tag-zip" style={{ marginBottom: '20px', display: 'inline-flex' }}>
                     SYSTEM_READY
@@ -134,7 +147,7 @@ const LandingPage = () => {
                     lineHeight: 1,
                     marginBottom: '2rem',
                     letterSpacing: '0.05em',
-                    fontWeight: 200, // Thinner, more futuristic
+                    fontWeight: 200,
                     textShadow: '0 0 20px rgba(255,255,255,0.2)'
                 }}>
                     ANVESHAN<br /><span style={{ fontWeight: 800 }}>2026</span>
@@ -151,101 +164,275 @@ const LandingPage = () => {
                     REAL-TIME CHAT, EVENT MANAGEMENT, AND SECURE ACTIVITY TRACKING.
                 </p>
 
-                <div ref={ctaRef} style={{ marginBottom: '4rem' }}>
-                    <button
-                        className="btn-industrial hover-glitch"
-                        data-ref="INITIALIZE"
-                        onClick={() => navigate('/login')}
-                        style={{
-                            borderRadius: '99px',
-                            padding: '16px 48px',
-                            borderColor: 'var(--accent-purple)',
-                            background: 'rgba(120, 50, 255, 0.1)',
-                            backdropFilter: 'blur(10px)'
-                        }}
-                    >
-                        INITIALIZE <span style={{ marginLeft: '10px' }}>→</span>
-                    </button>
-                    <p style={{ marginTop: '20px', fontSize: '12px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.6)' }} className="caps">Stay Tuned</p>
+                <div ref={ctaRef} style={{ marginBottom: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <button
+                            className="btn-industrial hover-glitch"
+                            data-ref="EXPLORE"
+                            onClick={() => navigate('/explore')}
+                            style={{
+                                borderRadius: '99px',
+                                padding: '16px 48px',
+                                borderColor: 'var(--white)',
+                                background: 'transparent',
+                                backdropFilter: 'blur(10px)',
+                                fontSize: '0.9rem',
+                                letterSpacing: '0.1em'
+                            }}
+                        >
+                            EXPLORE ROOMS <span style={{ marginLeft: '10px' }}>→</span>
+                        </button>
+                        <button
+                            className="btn-industrial hover-glitch"
+                            data-ref="INITIALIZE"
+                            onClick={() => navigate('/login')}
+                            style={{
+                                borderRadius: '99px',
+                                padding: '16px 48px',
+                                borderColor: 'var(--accent-purple)',
+                                background: 'rgba(120, 50, 255, 0.1)',
+                                backdropFilter: 'blur(10px)',
+                                fontSize: '0.9rem',
+                                letterSpacing: '0.1em'
+                            }}
+                        >
+                            USER LOGIN <span style={{ marginLeft: '10px' }}>⚡</span>
+                        </button>
+                    </div>
+                    <p style={{ marginTop: '10px', fontSize: '12px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.6)' }} className="caps">Public Access Enabled</p>
                 </div>
 
-                {/* FEATURE GRID */}
+                {/* EVENTS LIST */}
                 <div ref={featuresRef} style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                    gap: '20px',
-                    marginTop: '20px',
+                    maxWidth: '850px',
+                    margin: '80px auto 0',
                     textAlign: 'left',
-                    opacity: 0 // Will be handled by GSAP
+                    opacity: 0,
+                    position: 'relative',
+                    zIndex: 10
                 }}>
-                    {/* Feature 1 */}
-                    <div className="card-industrial" style={{ padding: '24px', backdropFilter: 'blur(5px)', backgroundColor: 'rgba(26, 26, 26, 0.8)' }}>
-                        <div className="flex-between" style={{ marginBottom: '15px' }}>
-                            <div className="monospaced" style={{ color: 'var(--safety-orange)', fontSize: '10px' }}>01 // CONNECT</div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--safety-orange)' }}></div>
+                    <div style={{
+                        background: 'var(--accent-purple)',
+                        color: 'white',
+                        padding: '16px 32px',
+                        borderTopLeftRadius: '20px',
+                        borderTopRightRadius: '20px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxShadow: '0 8px 30px rgba(120, 50, 255, 0.25)',
+                    }} className="caps">
+                        <span style={{ fontSize: '1.6rem', fontWeight: '900', letterSpacing: '0.05em' }}>
+                            FEBRUARY_21
+                        </span>
+                        <div className="monospaced" style={{ fontSize: '10px', opacity: 0.9, letterSpacing: '0.15em' }}>
+                            SYS_STAT: INITIALIZED // HUB_LOC: ANVESHAN_L01
                         </div>
-                        <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>TEMP ROOMS</h3>
-                        <p className="monospaced" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Create  secure chat rooms for quick collaboration. Auto-expiring sessions to ensure privacy and focus.
-                        </p>
                     </div>
 
-                    {/* Feature 2 */}
-                    <div className="card-industrial" style={{ padding: '24px', backdropFilter: 'blur(5px)', backgroundColor: 'rgba(26, 26, 26, 0.8)' }}>
-                        <div className="flex-between" style={{ marginBottom: '15px' }}>
-                            <div className="monospaced" style={{ color: 'var(--blueprint-blue)', fontSize: '10px' }}>02 // ENGAGE</div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blueprint-blue)' }}></div>
-                        </div>
-                        <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>CAMPUS EVENTS</h3>
-                        <p className="monospaced" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Discover and register for campus activities. Stay updated with real-time event schedules and notifications.
-                        </p>
-                    </div>
+                    <div style={{
+                        background: 'rgba(10, 10, 10, 0.7)',
+                        backdropFilter: 'blur(30px)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderTop: 'none',
+                        padding: '40px 32px',
+                        borderBottomLeftRadius: '20px',
+                        borderBottomRightRadius: '20px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div className="cross-hatch" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.03, pointerEvents: 'none' }}></div>
 
-                    {/* Feature 3 */}
-                    <div className="card-industrial" style={{ padding: '24px', backdropFilter: 'blur(5px)', backgroundColor: 'rgba(26, 26, 26, 0.8)' }}>
-                        <div className="flex-between" style={{ marginBottom: '15px' }}>
-                            <div className="monospaced" style={{ color: 'var(--white)', fontSize: '10px' }}>03 // VERIFY</div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--white)' }}></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                            <h2 className="caps" style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', margin: 0, lineHeight: 1 }}>
+                                PHASE_01 <span style={{ opacity: 0.3 }}>|</span> THE_INCEPTION
+                            </h2>
+                            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, var(--accent-purple), transparent)', opacity: 0.4 }}></div>
                         </div>
-                        <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>SECURE ACCESS</h3>
-                        <p className="monospaced" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Generated QR-code tokens for event check-ins. A fraud-proof system for reliable attendance tracking.
-                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
+                                gap: '30px',
+                                paddingBottom: '24px',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div className="monospaced" style={{ fontSize: '12px', color: 'var(--accent-purple)', fontWeight: 'bold', paddingTop: '4px' }}>
+                                    09:00 — 11:00
+                                </div>
+                                <div>
+                                    <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px', color: 'white', letterSpacing: '0.05em' }}>Arrival & Registration</h3>
+                                    <p className="monospaced" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                                        Teams verification, biometric check-in, and hardware asset distribution at the main lobby terminal.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
+                                gap: '30px',
+                                paddingBottom: '24px',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div className="monospaced" style={{ fontSize: '12px', color: 'var(--accent-purple)', fontWeight: 'bold', paddingTop: '4px' }}>
+                                    11:00 — 12:30
+                                </div>
+                                <div>
+                                    <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px', color: 'white', letterSpacing: '0.05em' }}>Opening Keynote</h3>
+                                    <p className="monospaced" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                                        Vision of ANVESHAN 26, keynote by industry leaders, and technical protocol briefing.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
+                                gap: '30px'
+                            }}>
+                                <div className="monospaced" style={{ fontSize: '12px', color: '#22c55e', fontWeight: 'bold', paddingTop: '4px' }}>
+                                    12:30 — ∞
+                                </div>
+                                <div>
+                                    <h3 className="caps" style={{ fontSize: '1.2rem', marginBottom: '10px', color: 'white', letterSpacing: '0.05em' }}>The Reveal</h3>
+                                    <p className="monospaced" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                                        Problem statements unlocked. System initialization. The hacking phase begins across all sectors.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* ABOUT US SECTION */}
+                <section style={{ marginTop: '120px', textAlign: 'left', maxWidth: '850px', margin: '120px auto 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                        <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>MISSION_STATEMENT</h2>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
+                    </div>
+                    <div className="card-industrial" style={{ padding: '40px' }}>
+                        <p className="monospaced" style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
+                            ANVESHAN is more than a platform; it's a technical ecosystem built on the principles of <span style={{ color: 'var(--accent-purple)' }}>open innovation</span> and <span style={{ color: 'var(--accent-purple)' }}>secure collaboration</span>.
+                            Our mission is to empower the next generation of engineers by providing the infrastructure they need to build, connect, and verify their ideas in real-world scenarios.
+                        </p>
+                        <div style={{ marginTop: '30px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                            <div style={{ padding: '20px', borderLeft: '2px solid var(--accent-purple)', background: 'rgba(255,255,255,0.02)' }}>
+                                <h4 className="caps" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>Infrastructure</h4>
+                                <p className="monospaced" style={{ fontSize: '0.7rem', opacity: 0.6 }}>High-availability campus nodes.</p>
+                            </div>
+                            <div style={{ padding: '20px', borderLeft: '2px solid var(--accent-purple)', background: 'rgba(255,255,255,0.02)' }}>
+                                <h4 className="caps" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>Security</h4>
+                                <p className="monospaced" style={{ fontSize: '0.7rem', opacity: 0.6 }}>End-to-end encrypted room logic.</p>
+                            </div>
+                            <div style={{ padding: '20px', borderLeft: '2px solid var(--accent-purple)', background: 'rgba(255,255,255,0.02)' }}>
+                                <h4 className="caps" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>Scale</h4>
+                                <p className="monospaced" style={{ fontSize: '0.7rem', opacity: 0.6 }}>Optimized for 10k+ concurrent users.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* FAQ SECTION */}
+                <section style={{ marginTop: '120px', maxWidth: '850px', margin: '120px auto 0' }}>
+                    <h2 className="caps" style={{
+                        fontSize: 'clamp(2rem, 5vw, 4rem)',
+                        marginBottom: '60px',
+                        fontWeight: '900',
+                        textAlign: 'center'
+                    }}>
+                        FREQUENTLY ASKED <span style={{
+                            background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-secondary))',
+                            WebkitBackgroundClip: 'text',
+                            WebkitFillColor: 'transparent',
+                            textShadow: '0 0 30px rgba(120, 50, 255, 0.3)'
+                        }}>QUESTIONS</span>
+                    </h2>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        {faqData.map((item, index) => (
+                            <div
+                                key={index}
+                                onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                                className="card-industrial hover-glitch"
+                                style={{
+                                    padding: '24px 32px',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    borderColor: activeFaq === index ? 'var(--accent-purple)' : 'var(--border)',
+                                    background: activeFaq === index ? 'rgba(120, 50, 255, 0.05)' : 'rgba(255,255,255,0.02)'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <h3 className="monospaced" style={{ fontSize: '1rem', fontWeight: 'bold' }}>{item.q}</h3>
+                                    <span style={{
+                                        color: 'var(--accent-purple)',
+                                        fontSize: '1.5rem',
+                                        transform: activeFaq === index ? 'rotate(45deg)' : 'rotate(0deg)',
+                                        transition: 'transform 0.3s ease'
+                                    }}>+</span>
+                                </div>
+                                {activeFaq === index && (
+                                    <p className="monospaced" style={{
+                                        marginTop: '20px',
+                                        fontSize: '0.9rem',
+                                        color: 'var(--text-muted)',
+                                        lineHeight: '1.6',
+                                        borderTop: '1px solid rgba(255,255,255,0.05)',
+                                        paddingTop: '20px'
+                                    }}>
+                                        {item.a}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* CONTACT US SECTION */}
+                <section style={{ marginTop: '120px', maxWidth: '850px', margin: '120px auto 120px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '60px' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
+                        <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>UPLINK_ESTABLISHED</h2>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
+                        <div className="card-industrial" style={{ padding: '30px', textAlign: 'center' }}>
+                            <div className="monospaced" style={{ fontSize: '10px', color: 'var(--accent-purple)', marginBottom: '15px' }}>DIRECT_COMMS</div>
+                            <h4 className="caps" style={{ marginBottom: '10px' }}>Email Support</h4>
+                            <p className="monospaced" style={{ fontSize: '0.8rem', opacity: 0.6 }}>support@anveshan.pro</p>
+                        </div>
+                        <div className="card-industrial" style={{ padding: '30px', textAlign: 'center' }}>
+                            <div className="monospaced" style={{ fontSize: '10px', color: 'var(--accent-purple)', marginBottom: '15px' }}>SOCIAL_NODES</div>
+                            <h4 className="caps" style={{ marginBottom: '10px' }}>Public Intel</h4>
+                            <p className="monospaced" style={{ fontSize: '0.8rem', opacity: 0.6 }}>@anveshan_2026</p>
+                        </div>
+                        <div className="card-industrial" style={{ padding: '30px', textAlign: 'center' }}>
+                            <div className="monospaced" style={{ fontSize: '10px', color: 'var(--accent-purple)', marginBottom: '15px' }}>ENCRYPTED_LINE</div>
+                            <h4 className="caps" style={{ marginBottom: '10px' }}>Signal Protocol</h4>
+                            <p className="monospaced" style={{ fontSize: '0.8rem', opacity: 0.6 }}>+91 [REDACTED]</p>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             {/* FOOTER METADATA */}
-            {/* FOOTER METADATA - Responsive positioning */}
-            <div style={{
+            <div ref={footerRef} className="monospaced" style={{
+                zIndex: 10,
+                opacity: 0.5,
+                fontSize: '10px',
+                padding: '40px',
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'space-between',
-                padding: '40px',
-                marginTop: 'auto', // Pushes to bottom in flex container
-                zIndex: 10,
-                pointerEvents: 'none' // Allow clicks to pass through if overlays
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                background: 'rgba(0,0,0,0.2)'
             }}>
-                <div ref={footerRef} className="monospaced" style={{
-                    fontSize: '10px',
-                    color: 'var(--text-muted)',
-                    textAlign: 'left'
-                }}>
-                    <p>FIG. 1.0 "LANDING"</p>
-                    <p>LOC: 12.9716° N, 77.5946° E</p>
-                    <p>SYS: ONLINE</p>
-                </div>
-
-                <div className="monospaced" style={{
-                    fontSize: '10px',
-                    color: 'var(--text-muted)',
-                    textAlign: 'right'
-                }}>
-                    <p>EST. 2026</p>
-                    <p>JSS INSTITUTIONS</p>
-                    <p>V. 2.1.0 RC</p>
-                </div>
+                <div>ANVESHAN_CORE_v2.0.6</div>
+                <div>© 2026 TECHNICAL_HUB_NETWORK. ALL RIGHTS RESERVED.</div>
+                <div>BUILD_ID: #4F2G9</div>
             </div>
         </div>
     );
