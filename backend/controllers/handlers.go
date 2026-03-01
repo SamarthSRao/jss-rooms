@@ -364,8 +364,8 @@ func HandleActivityRegistrations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var regs []models.ActivityRegistration
-	// Preload User if we want more details, but UserUSN is already on the struct
-	if err := database.DB.Where("activity_id = ?", activityID).Find(&regs).Error; err != nil {
+	// Preload User to show details (Name, College, Year) in admin activity log
+	if err := database.DB.Preload("User").Where("activity_id = ?", activityID).Find(&regs).Error; err != nil {
 		http.Error(w, "Failed to fetch registrations", http.StatusInternalServerError)
 		return
 	}
@@ -604,4 +604,116 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func HandleTeamRegister(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := getTokenFromRequest(r)
+	userID := helpers.GetUserIDFromToken(token)
+	if userID == uuid.Nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var input struct {
+		ActivityID uuid.UUID `json:"activity_id"`
+		TeamName   string    `json:"team_name"`
+		USNs       []string  `json:"usns"` // List of USNs including the lead
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	if input.TeamName == "" {
+		http.Error(w, "Team name is required", http.StatusBadRequest)
+		return
+	}
+
+	// Use Transaction
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Create Team
+		team := models.Team{
+			Name:       input.TeamName,
+			ActivityID: input.ActivityID,
+			LeadID:     userID,
+		}
+		if err := tx.Create(&team).Error; err != nil {
+			return fmt.Errorf("failed to create team: %v", err)
+		}
+
+		// 2. Register each member
+		for _, usn := range input.USNs {
+			var member models.User
+			if err := tx.Where("LOWER(usn) = LOWER(?)", strings.TrimSpace(usn)).First(&member).Error; err != nil {
+				return fmt.Errorf("USN %s not found", usn)
+			}
+
+			// Check if already registered
+			var existing models.ActivityRegistration
+			if err := tx.Where("activity_id = ? AND user_id = ?", input.ActivityID, member.ID).First(&existing).Error; err == nil {
+				return fmt.Errorf("User %s is already registered", usn)
+			}
+
+			usnStr := ""
+			if member.USN != nil {
+				usnStr = *member.USN
+			}
+
+			reg := models.ActivityRegistration{
+				ActivityID: input.ActivityID,
+				UserID:     member.ID,
+				UserUSN:    usnStr,
+				TeamID:     &team.ID,
+				TeamName:   team.Name,
+				Status:     "registered",
+			}
+			if err := tx.Create(&reg).Error; err != nil {
+				return fmt.Errorf("failed to register %s: %v", usn, err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Team registered successfully"})
+}
+
+func GetTeamDetails(w http.ResponseWriter, r *http.Request) {
+	teamID := r.URL.Query().Get("team_id")
+	if teamID == "" {
+		http.Error(w, "Team ID required", http.StatusBadRequest)
+		return
+	}
+
+	var team models.Team
+	if err := database.DB.First(&team, "id = ?", teamID).Error; err != nil {
+		http.Error(w, "Team not found", http.StatusNotFound)
+		return
+	}
+
+	var members []models.ActivityRegistration
+	if err := database.DB.Preload("User").Where("team_id = ?", teamID).Find(&members).Error; err != nil {
+		http.Error(w, "Failed to fetch members", http.StatusInternalServerError)
+		return
+	}
+
+	// Fetch Lead details explicitly to be safe
+	var lead models.User
+	database.DB.First(&lead, "id = ?", team.LeadID)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"team":    team,
+		"members": members,
+		"lead":    lead,
+	})
 }

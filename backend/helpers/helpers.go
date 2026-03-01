@@ -27,15 +27,19 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(usn *string, email string, userID uuid.UUID, role string) (string, error) {
+func GenerateToken(usn *string, email *string, userID uuid.UUID, role string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	usnStr := ""
 	if usn != nil {
 		usnStr = *usn
 	}
+	emailStr := ""
+	if email != nil {
+		emailStr = *email
+	}
 	claims := &Claims{
 		USN:    usnStr,
-		Email:  email,
+		Email:  emailStr,
 		UserID: userID.String(),
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{

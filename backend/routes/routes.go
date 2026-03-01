@@ -26,5 +26,7 @@ func SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/profile", middleware.AuthMiddleware(controllers.GetProfile))
 	mux.HandleFunc("/api/groups", middleware.AuthMiddleware(controllers.HandleGroups))
 	mux.HandleFunc("/api/activities/register", middleware.AuthMiddleware(controllers.HandleActivityRegister))
+	mux.HandleFunc("/api/activities/register-team", middleware.AuthMiddleware(controllers.HandleTeamRegister))
+	mux.HandleFunc("/api/activities/team", middleware.AuthMiddleware(controllers.GetTeamDetails))
 	mux.HandleFunc("/api/activities/registrations", middleware.AuthMiddleware(controllers.HandleActivityRegistrations))
 }

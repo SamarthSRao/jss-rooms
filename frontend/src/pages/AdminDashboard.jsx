@@ -608,24 +608,32 @@ const AdminDashboard = ({ user }) => {
                                 <p className="monospaced" style={{ opacity: 0.5, textAlign: 'center', padding: '40px' }}>NO_DATA_FOUND</p>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px', background: 'var(--black)', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                                        <div>USER_USN</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 1.2fr', padding: '10px', background: 'var(--black)', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                        <div>USER_DETAILS</div>
+                                        <div>TEAM_NAME</div>
                                         <div>STATUS</div>
                                         <div>TIMESTAMP</div>
                                     </div>
                                     {activityRegistrations.map((reg) => (
-                                        <div key={reg.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '15px', background: 'var(--industrial-gray)', borderBottom: '1px solid var(--border)' }}>
-                                            <div className="monospaced" style={{ fontWeight: 'bold' }}>{reg.user_usn || "N/A"}</div>
+                                        <div key={reg.id} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 1.2fr', padding: '15px', background: 'var(--industrial-gray)', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <div className="monospaced" style={{ fontWeight: 'bold', fontSize: '11px' }}>{reg.user_usn || "N/A"}</div>
+                                                <div style={{ fontSize: '9px', opacity: 0.5 }}>{reg.user?.name}</div>
+                                            </div>
+                                            <div className="monospaced" style={{ fontSize: '10px', color: 'var(--safety-yellow)' }}>
+                                                {reg.team_name || "INDIVIDUAL"}
+                                            </div>
                                             <div>
                                                 <span className="tag-zip" style={{
                                                     background: reg.status === 'checked_in' ? 'var(--safety-yellow)' : 'var(--border)',
                                                     color: reg.status === 'checked_in' ? 'black' : 'white',
-                                                    marginLeft: 0
+                                                    marginLeft: 0,
+                                                    fontSize: '8px'
                                                 }}>
                                                     {reg.status}
                                                 </span>
                                             </div>
-                                            <div className="monospaced" style={{ fontSize: '10px', opacity: 0.6 }}>
+                                            <div className="monospaced" style={{ fontSize: '9px', opacity: 0.6 }}>
                                                 {new Date(reg.created_at).toLocaleString()}
                                             </div>
                                         </div>

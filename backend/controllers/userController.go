@@ -84,9 +84,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		usnPtr = &input.USN
 	}
 
+	var emailPtr *string
+	if input.Email != "" {
+		emailPtr = &input.Email
+	}
+
 	user := models.User{
 		USN:      usnPtr,
-		Email:    input.Email,
+		Email:    emailPtr,
 		Password: hashedPassword,
 		Role:     role,
 	}
@@ -155,6 +160,8 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 			Bio          string    `json:"bio"`
 			ProfileImage string    `json:"profile_image"`
 			GroupID      uuid.UUID `json:"group_id"`
+			College      string    `json:"college"`
+			Year         string    `json:"year"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -166,6 +173,8 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 			Bio:          input.Bio,
 			ProfileImage: input.ProfileImage,
 			GroupID:      &input.GroupID,
+			College:      input.College,
+			Year:         input.Year,
 		})
 		w.WriteHeader(http.StatusNoContent)
 		return

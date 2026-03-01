@@ -12,7 +12,7 @@ import (
 type User struct {
 	ID                    uuid.UUID              `gorm:"type:uuid;primaryKey" json:"id"`
 	USN                   *string                `gorm:"uniqueIndex" json:"usn"`
-	Email                 string                 `gorm:"uniqueIndex" json:"email"`
+	Email                 *string                `gorm:"uniqueIndex" json:"email"`
 	Password              string                 `json:"-"`
 	Name                  string                 `json:"name"`
 	Bio                   string                 `json:"bio"`
@@ -20,6 +20,8 @@ type User struct {
 	GroupID               *uuid.UUID             `gorm:"type:uuid" json:"group_id"`
 	Group                 *Group                 `gorm:"foreignKey:GroupID" json:"group,omitempty"`
 	ProfileImage          string                 `json:"profile_image"`
+	College               string                 `json:"college"`
+	Year                  string                 `json:"year"`
 	CreatedAt             time.Time              `json:"created_at"`
 	ActivityRegistrations []ActivityRegistration `json:"activity_registrations,omitempty"`
 }
@@ -94,12 +96,23 @@ type Activity struct {
 }
 
 type ActivityRegistration struct {
+	ID         uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	ActivityID uuid.UUID  `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"activity_id"`
+	UserID     uuid.UUID  `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"user_id"`
+	UserUSN    string     `json:"user_usn"`
+	TeamID     *uuid.UUID `gorm:"type:uuid;index" json:"team_id"`
+	TeamName   string     `json:"team_name"`
+	Status     string     `gorm:"default:'registered'" json:"status"`
+	Activity   *Activity  `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
+	User       *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+}
+
+type Team struct {
 	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	ActivityID uuid.UUID `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"activity_id"`
-	UserID     uuid.UUID `gorm:"type:uuid;index;uniqueIndex:idx_activity_user" json:"user_id"`
-	UserUSN    string    `json:"user_usn"`
-	Status     string    `gorm:"default:'registered'" json:"status"`
-	Activity   *Activity `gorm:"foreignKey:ActivityID" json:"activity,omitempty"`
+	Name       string    `gorm:"not null" json:"name"`
+	ActivityID uuid.UUID `gorm:"type:uuid;index" json:"activity_id"`
+	LeadID     uuid.UUID `gorm:"type:uuid" json:"lead_id"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -141,5 +154,10 @@ func (a *Activity) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (ar *ActivityRegistration) BeforeCreate(tx *gorm.DB) (err error) {
 	ar.ID = uuid.New()
+	return
+}
+
+func (t *Team) BeforeCreate(tx *gorm.DB) (err error) {
+	t.ID = uuid.New()
 	return
 }

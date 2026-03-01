@@ -14,6 +14,9 @@ const ActivityDetails = ({ user }) => {
     const [registration, setRegistration] = useState(null);
     const [loading, setLoading] = useState(true);
     const [registering, setRegistering] = useState(false);
+    const [registrationType, setRegistrationType] = useState('individual');
+    const [teamName, setTeamName] = useState('');
+    const [teamData, setTeamData] = useState(null);
     const [additionalUSNs, setAdditionalUSNs] = useState(['', '', '', '']);
     const [showUSNInputs, setShowUSNInputs] = useState(false);
     const [registrationMessage, setRegistrationMessage] = useState(null); // { type: 'success' | 'error', text: string | JSX }
@@ -64,9 +67,25 @@ const ActivityDetails = ({ user }) => {
                 const userProfile = response.data;
                 const reg = userProfile.activity_registrations?.find(r => r.activity_id === id);
                 setRegistration(reg);
+
+                if (reg && reg.team_id && !teamData) {
+                    fetchTeamDetails(reg.team_id);
+                }
             }
         } catch (err) {
             console.error('Error checking registration', err);
+        }
+    };
+
+    const fetchTeamDetails = async (teamId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_BASE_URL}/activities/team?team_id=${teamId}`, {
+                headers: { Authorization: token }
+            });
+            setTeamData(res.data);
+        } catch (err) {
+            console.error('Error fetching team details', err);
         }
     };
 
@@ -76,16 +95,35 @@ const ActivityDetails = ({ user }) => {
         try {
             const token = localStorage.getItem('token');
 
-            // Filter out empty strings from additionalUSNs
-            const friends = additionalUSNs.filter(usn => usn.trim() !== '');
-            const usnsToRegister = [user.usn, ...friends];
+            let response;
+            if (registrationType === 'team') {
+                if (!teamName.trim()) {
+                    setRegistrationMessage({ type: 'error', text: "TEAM NAME IS REQUIRED" });
+                    setRegistering(false);
+                    return;
+                }
+                const friends = additionalUSNs.filter(usn => usn.trim() !== '');
+                const usnsToRegister = [user.usn, ...friends];
 
-            const response = await axios.post(`${API_BASE_URL}/activities/register`, {
-                activity_id: id,
-                usns: usnsToRegister
-            }, {
-                headers: { Authorization: token }
-            });
+                response = await axios.post(`${API_BASE_URL}/activities/register-team`, {
+                    activity_id: id,
+                    team_name: teamName,
+                    usns: usnsToRegister
+                }, {
+                    headers: { Authorization: token }
+                });
+            } else {
+                // Filter out empty strings from additionalUSNs
+                const friends = additionalUSNs.filter(usn => usn.trim() !== '');
+                const usnsToRegister = [user.usn, ...friends];
+
+                response = await axios.post(`${API_BASE_URL}/activities/register`, {
+                    activity_id: id,
+                    usns: usnsToRegister
+                }, {
+                    headers: { Authorization: token }
+                });
+            }
 
             if (response.data.errors && response.data.errors.length > 0) {
                 setRegistrationMessage({
@@ -405,6 +443,37 @@ const ActivityDetails = ({ user }) => {
                                 {!isRegistered ? (
                                     <>
                                         <h3 className="sidecard-title">"JOIN_ACTIVITY"</h3>
+
+                                        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+                                            <button
+                                                onClick={() => setRegistrationType('individual')}
+                                                className={`btn-industrial ${registrationType === 'individual' ? 'active' : ''}`}
+                                                style={{ flex: 1, fontSize: '10px', padding: '10px', background: registrationType === 'individual' ? '#fff' : 'transparent', color: registrationType === 'individual' ? '#000' : '#fff' }}
+                                            >
+                                                INDIVIDUAL
+                                            </button>
+                                            <button
+                                                onClick={() => setRegistrationType('team')}
+                                                className={`btn-industrial ${registrationType === 'team' ? 'active' : ''}`}
+                                                style={{ flex: 1, fontSize: '10px', padding: '10px', background: registrationType === 'team' ? '#fff' : 'transparent', color: registrationType === 'team' ? '#000' : '#fff' }}
+                                            >
+                                                TEAM
+                                            </button>
+                                        </div>
+
+                                        {registrationType === 'team' && (
+                                            <div className="input-wrapper" style={{ textAlign: 'left', marginBottom: '20px' }}>
+                                                <label className="meta-label" style={{ marginBottom: '8px', display: 'block' }}>TEAM NAME</label>
+                                                <input
+                                                    className="usn-input"
+                                                    style={{ width: '100%', boxSizing: 'border-box' }}
+                                                    placeholder="ENTER TEAM NAME"
+                                                    value={teamName}
+                                                    onChange={(e) => setTeamName(e.target.value.toUpperCase())}
+                                                />
+                                            </div>
+                                        )}
+
                                         <div className="status-row">
                                             <div>
                                                 <div className="status-label">STATUS</div>
@@ -418,7 +487,7 @@ const ActivityDetails = ({ user }) => {
                                                 onClick={() => setShowUSNInputs(!showUSNInputs)}
                                                 className="group-reg-toggle"
                                             >
-                                                {showUSNInputs ? "- REMOVE GROUP MEMBERS" : "+ ADD UP TO 4 FRIENDS (USN)"}
+                                                {showUSNInputs ? "- REMOVE MEMBERS" : registrationType === 'team' ? "+ ADD TEAM MEMBERS (USN)" : "+ ADD GUESTS (USN)"}
                                             </button>
 
                                             {showUSNInputs && (
@@ -427,7 +496,7 @@ const ActivityDetails = ({ user }) => {
                                                         <input
                                                             key={idx}
                                                             type="text"
-                                                            placeholder={`FRIEND'S USN #${idx + 1}`}
+                                                            placeholder={`MEMBER USN #${idx + 1}`}
                                                             value={usn}
                                                             onChange={(e) => {
                                                                 const newUSNs = [...additionalUSNs];
@@ -460,31 +529,121 @@ const ActivityDetails = ({ user }) => {
                                     </>
                                 ) : (
                                     <div>
-                                        <div className="auth-badge">AUTHORIZED</div>
-                                        <h3 className="sidecard-title">"ACCESS_ID"</h3>
+                                        {teamData ? (
+                                            <div className="team-dashboard fade-in">
+                                                <div className="auth-badge" style={{ marginBottom: '20px' }}>TEAM_CONFIRMED</div>
+                                                <h3 className="sidecard-title" style={{ marginBottom: '32px' }}>"TEAM_DASHBOARD"</h3>
 
-                                        <div className="qr-wrapper">
-                                            <div className="qr-box">
-                                                <QRCodeSVG
-                                                    value={registration.qr_code_token || registration.id}
-                                                    size={200}
-                                                    level="H"
-                                                    includeMargin={true}
-                                                    bgColor="#000000"
-                                                    fgColor="#FFFFFF"
-                                                />
+                                                {/* Team Info Table */}
+                                                <div style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', textAlign: 'left', marginBottom: '40px' }}>
+                                                    <h4 className="meta-label" style={{ opacity: 1, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '20px' }}>Team Information</h4>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '11px', opacity: 0.5 }}>Team Name</span>
+                                                            <span style={{ fontWeight: 800 }}>{teamData.team.name}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '11px', opacity: 0.5 }}>Team Lead</span>
+                                                            <span style={{ color: 'var(--safety-yellow)' }}>{teamData.lead.name}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '11px', opacity: 0.5 }}>Email</span>
+                                                            <span style={{ fontSize: '11px' }}>{teamData.lead.email}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '11px', opacity: 0.5 }}>Registered</span>
+                                                            <span style={{ fontSize: '11px' }}>{new Date(teamData.team.created_at).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Team Members List */}
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <h4 className="meta-label" style={{ opacity: 1, marginBottom: '20px' }}>Team Members ({teamData.members.length})</h4>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                        {teamData.members.map((member, idx) => (
+                                                            <div key={idx} style={{
+                                                                background: 'rgba(255,255,255,0.03)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                padding: '16px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '16px'
+                                                            }}>
+                                                                <div style={{
+                                                                    width: '40px',
+                                                                    height: '40px',
+                                                                    background: 'var(--safety-orange)',
+                                                                    color: '#000',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontWeight: 900,
+                                                                    fontSize: '18px',
+                                                                    borderRadius: '4px'
+                                                                }}>
+                                                                    {member.user?.name?.[0] || 'U'}
+                                                                </div>
+                                                                <div style={{ flex: 1 }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <span style={{ fontWeight: 700, fontSize: '14px' }}>{member.user?.name || member.user_usn}</span>
+                                                                        {member.user?.id === teamData.lead.id && (
+                                                                            <span className="tag-zip" style={{ background: 'var(--safety-yellow)', margin: 0, padding: '2px 6px', fontSize: '8px' }}>LEAD</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div style={{ fontSize: '10px', opacity: 0.5 }}>{member.user?.email}</div>
+                                                                    <div style={{ fontSize: '9px', opacity: 0.4, marginTop: '4px' }}>
+                                                                        {member.user?.college || 'JSS TECHNICAL EDUCATION'} • {member.user?.year || 'YEAR unknown'}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="qr-wrapper" style={{ marginTop: '40px' }}>
+                                                    <div className="qr-box">
+                                                        <QRCodeSVG
+                                                            value={registration.qr_code_token || registration.id}
+                                                            size={200}
+                                                            level="H"
+                                                            includeMargin={true}
+                                                            bgColor="#000000"
+                                                            fgColor="#FFFFFF"
+                                                        />
+                                                    </div>
+                                                    <div style={{ fontSize: '9px', opacity: 0.4, marginTop: '12px', textAlign: 'center' }}>PERSONAL_ENTRY_PASS</div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div>
+                                                <div className="auth-badge">AUTHORIZED</div>
+                                                <h3 className="sidecard-title">"ACCESS_ID"</h3>
 
-                                        <div className="user-details">
-                                            USER: {user?.usn || 'UNKNOWN'}<br />
-                                            ISSUED: {new Date(registration.CreatedAt || registration.created_at).toLocaleDateString()}<br />
-                                            ID: {(registration.qr_code_token || registration.id).substring(0, 15)}...
-                                        </div>
+                                                <div className="qr-wrapper">
+                                                    <div className="qr-box">
+                                                        <QRCodeSVG
+                                                            value={registration.qr_code_token || registration.id}
+                                                            size={200}
+                                                            level="H"
+                                                            includeMargin={true}
+                                                            bgColor="#000000"
+                                                            fgColor="#FFFFFF"
+                                                        />
+                                                    </div>
+                                                </div>
 
-                                        <div className="validated-badge">
-                                            <Shield size={16} /> SECURITY_VALIDATED
-                                        </div>
+                                                <div className="user-details">
+                                                    USER: {user?.usn || 'UNKNOWN'}<br />
+                                                    ISSUED: {new Date(registration.CreatedAt || registration.created_at).toLocaleDateString()}<br />
+                                                    ID: {(registration.qr_code_token || registration.id).substring(0, 15)}...
+                                                </div>
+
+                                                <div className="validated-badge">
+                                                    <Shield size={16} /> SECURITY_VALIDATED
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
