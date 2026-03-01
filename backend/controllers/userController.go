@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jssrooms/backend/database"
@@ -19,6 +20,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		USN      string `json:"usn"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 		Role     string `json:"role"`
 	}
@@ -27,22 +29,43 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.USN == "" || input.Password == "" {
-		http.Error(w, "USN and Password are required", http.StatusBadRequest)
+	if input.USN == "" && input.Email == "" {
+		http.Error(w, "USN or Email is required", http.StatusBadRequest)
+		return
+	}
+	if input.Password == "" {
+		http.Error(w, "Password is required", http.StatusBadRequest)
 		return
 	}
 
-	// USN Regex Validation
-	usnRegex := regexp.MustCompile(`^1JS\d{2}[A-Z]{2}\d{3}$`)
-	if !usnRegex.MatchString(input.USN) {
-		http.Error(w, "Invalid USN format. Expected: 1JSYYBBSSS", http.StatusBadRequest)
-		return
+	// USN Regex Validation (only if provided)
+	if input.USN != "" {
+		usnRegex := regexp.MustCompile(`^1JS\d{2}[A-Z]{2}\d{3}$`)
+		if !usnRegex.MatchString(input.USN) {
+			http.Error(w, "Invalid USN format. Expected: 1JSYYBBSSS", http.StatusBadRequest)
+			return
+		}
+
+		var existingUser models.User
+		if err := database.DB.Where("usn = ?", input.USN).First(&existingUser).Error; err == nil {
+			http.Error(w, "USN already registered. Please login.", http.StatusConflict)
+			return
+		}
 	}
 
-	var existingUser models.User
-	if err := database.DB.Where("usn = ?", input.USN).First(&existingUser).Error; err == nil {
-		http.Error(w, "USN already registered. Please login.", http.StatusConflict)
-		return
+	// Email Validation (only if provided)
+	if input.Email != "" {
+		emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+		if !emailRegex.MatchString(strings.ToLower(input.Email)) {
+			http.Error(w, "Invalid email format", http.StatusBadRequest)
+			return
+		}
+
+		var existingUser models.User
+		if err := database.DB.Where("LOWER(email) = LOWER(?)", input.Email).First(&existingUser).Error; err == nil {
+			http.Error(w, "Email already registered. Please login.", http.StatusConflict)
+			return
+		}
 	}
 
 	hashedPassword, err := helpers.HashPassword(input.Password)
@@ -56,8 +79,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		role = "user"
 	}
 
+	var usnPtr *string
+	if input.USN != "" {
+		usnPtr = &input.USN
+	}
+
 	user := models.User{
-		USN:      input.USN,
+		USN:      usnPtr,
+		Email:    input.Email,
 		Password: hashedPassword,
 		Role:     role,
 	}
@@ -77,8 +106,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input struct {
-		USN      string `json:"usn"`
-		Password string `json:"password"`
+		Identifier string `json:"identifier"` // USN or Email
+		Password   string `json:"password"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -86,9 +115,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	result := database.DB.Where("usn = ?", input.USN).First(&user)
+	result := database.DB.Where("LOWER(usn) = LOWER(?) OR LOWER(email) = LOWER(?)", input.Identifier, input.Identifier).First(&user)
 	if result.Error != nil {
-		http.Error(w, "USN not found. Please register first.", http.StatusNotFound)
+		http.Error(w, "User not found. Please register first.", http.StatusNotFound)
 		return
 	}
 
@@ -144,7 +173,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeTokenResponse(w http.ResponseWriter, user models.User) {
-	tokenString, err := helpers.GenerateToken(user.USN, user.ID, user.Role)
+	tokenString, err := helpers.GenerateToken(user.USN, user.Email, user.ID, user.Role)
 	if err != nil {
 		http.Error(w, "Could not generate token", http.StatusInternalServerError)
 		return

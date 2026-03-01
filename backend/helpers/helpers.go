@@ -21,15 +21,21 @@ func init() {
 
 type Claims struct {
 	USN    string `json:"usn"`
+	Email  string `json:"email"`
 	UserID string `json:"id"`
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(usn string, userID uuid.UUID, role string) (string, error) {
+func GenerateToken(usn *string, email string, userID uuid.UUID, role string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
+	usnStr := ""
+	if usn != nil {
+		usnStr = *usn
+	}
 	claims := &Claims{
-		USN:    usn,
+		USN:    usnStr,
+		Email:  email,
 		UserID: userID.String(),
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{

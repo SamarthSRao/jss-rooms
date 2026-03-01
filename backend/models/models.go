@@ -11,7 +11,8 @@ import (
 
 type User struct {
 	ID                    uuid.UUID              `gorm:"type:uuid;primaryKey" json:"id"`
-	USN                   string                 `gorm:"uniqueIndex;not null" json:"usn"`
+	USN                   *string                `gorm:"uniqueIndex" json:"usn"`
+	Email                 string                 `gorm:"uniqueIndex" json:"email"`
 	Password              string                 `json:"-"`
 	Name                  string                 `json:"name"`
 	Bio                   string                 `json:"bio"`
@@ -80,16 +81,16 @@ type Registration struct {
 }
 
 type Activity struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	EventID     uuid.UUID `gorm:"type:uuid;index" json:"event_id"` // Optional: link to a parent event
-	Title       string    `gorm:"not null" json:"title"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
-	Location    string    `json:"location"`
-	ContactNumber string  `json:"contact_number"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	EventID       uuid.UUID `gorm:"type:uuid;index" json:"event_id"` // Optional: link to a parent event
+	Title         string    `gorm:"not null" json:"title"`
+	Description   string    `json:"description"`
+	ImageUrl      string    `json:"image_url"`
+	Location      string    `json:"location"`
+	ContactNumber string    `json:"contact_number"`
+	StartTime     time.Time `json:"start_time"`
+	EndTime       time.Time `json:"end_time"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type ActivityRegistration struct {

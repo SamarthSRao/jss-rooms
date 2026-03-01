@@ -515,7 +515,11 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 
 	targetUSNs := input.USNs
 	if len(targetUSNs) == 0 {
-		targetUSNs = []string{currentUser.USN}
+		usnStr := ""
+		if currentUser.USN != nil {
+			usnStr = *currentUser.USN
+		}
+		targetUSNs = []string{usnStr}
 	} else {
 		// Enforce limit of 4 additional people (so max 5 total in one go)
 		if len(targetUSNs) > 5 {
@@ -555,10 +559,14 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 				log.Printf("DEBUG: No existing registration found for user %s (ID: %s) in activity %s. Error: %v", usn, targetUser.ID, input.ActivityID, checkErr)
 			}
 
+			usnStr := ""
+			if targetUser.USN != nil {
+				usnStr = *targetUser.USN
+			}
 			reg := models.ActivityRegistration{
 				ActivityID: input.ActivityID,
 				UserID:     targetUser.ID,
-				UserUSN:    targetUser.USN,
+				UserUSN:    usnStr,
 				Status:     "registered",
 			}
 			if err := tx.Create(&reg).Error; err != nil {

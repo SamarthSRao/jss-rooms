@@ -4,7 +4,9 @@ import { motion } from 'framer-motion';
 
 const Login = ({ setUser }) => {
     const [mode, setMode] = useState('login');
+    const [loginWithEmail, setLoginWithEmail] = useState(false);
     const [usn, setUsn] = useState('');
+    const [email, setEmail] = useState('');
     const [role, setRole] = useState('user');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,10 +17,18 @@ const Login = ({ setUser }) => {
 
         // Validation for registration
         if (mode === 'register') {
-            const usnRegex = /^1JS\d{2}[A-Z]{2}\d{3}$/;
-            if (!usnRegex.test(usn)) {
-                setError('INVALID USN FORMAT. MUST BE (e.g. 1JS21CS001)');
-                return;
+            if (!loginWithEmail) {
+                const usnRegex = /^1JS\d{2}[A-Z]{2}\d{3}$/;
+                if (!usnRegex.test(usn)) {
+                    setError('INVALID USN FORMAT. MUST BE (e.g. 1JS21CS001)');
+                    return;
+                }
+            } else {
+                const emailRegex = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$/;
+                if (!emailRegex.test(email.toLowerCase())) {
+                    setError('INVALID EMAIL FORMAT');
+                    return;
+                }
             }
         }
 
@@ -26,7 +36,12 @@ const Login = ({ setUser }) => {
         setError('');
         try {
             const endpoint = mode === 'login' ? 'login' : 'register';
-            const payload = mode === 'login' ? { usn, password } : { usn, role, password };
+            let payload;
+            if (mode === 'login') {
+                payload = { identifier: loginWithEmail ? email : usn, password };
+            } else {
+                payload = { usn: loginWithEmail ? '' : usn, email: loginWithEmail ? email : '', role, password };
+            }
             const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/${endpoint}`, payload);
             const { token, user } = response.data;
             localStorage.setItem('token', token);
@@ -76,7 +91,7 @@ const Login = ({ setUser }) => {
                     ANVESHAN<br /><span style={{ fontWeight: 800 }}>SIGN IN</span>
                 </h1>
 
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '40px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
                     <button
                         onClick={() => setMode('login')}
                         className={`caps ${mode === 'login' ? '' : 'opacity-60'}`}
@@ -89,17 +104,39 @@ const Login = ({ setUser }) => {
                     > REGISTER </button>
                 </div>
 
+                <div style={{ marginBottom: '30px', textAlign: 'center' }}>
+                    <button
+                        type="button"
+                        onClick={() => setLoginWithEmail(!loginWithEmail)}
+                        className="monospaced caps"
+                        style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', padding: '8px 16px', borderRadius: '20px', fontSize: '10px', cursor: 'pointer' }}
+                    >
+                        {loginWithEmail ? '[ SWITCH TO USN ]' : "[ I DON'T HAVE A USN ]"}
+                    </button>
+                </div>
+
                 <form onSubmit={handleSubmit}>
                     <div className="input-wrapper">
-                        <label className="input-label">"COLLEGE USN"</label>
-                        <input
-                            type="text"
-                            className="input-industrial caps"
-                            placeholder="SAMPLE: 1JSXXCSXXX"
-                            value={usn}
-                            onChange={(e) => setUsn(e.target.value.toUpperCase())}
-                            required
-                        />
+                        <label className="input-label">{loginWithEmail ? '"EMAIL ADDRESS"' : '"COLLEGE USN"'}</label>
+                        {loginWithEmail ? (
+                            <input
+                                type="email"
+                                className="input-industrial"
+                                placeholder="SAMPLE: USER@EXAMPLE.COM"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        ) : (
+                            <input
+                                type="text"
+                                className="input-industrial caps"
+                                placeholder="SAMPLE: 1JSXXCSXXX"
+                                value={usn}
+                                onChange={(e) => setUsn(e.target.value.toUpperCase())}
+                                required
+                            />
+                        )}
                     </div>
 
                     <div className="input-wrapper" style={{ marginTop: '20px', marginBottom: '20px' }}>
