@@ -312,11 +312,40 @@ const ActivityDetails = ({ user }) => {
                             {/* MOBILE GROUP REGISTRATION (Visible only if NOT registered) */}
                             {!isRegistered && (
                                 <div className="mobile-group-reg">
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                                        <button
+                                            onClick={() => setRegistrationType('individual')}
+                                            className={`m-usn-input ${registrationType === 'individual' ? 'active' : ''}`}
+                                            style={{ flex: 1, background: registrationType === 'individual' ? '#fff' : '#111', color: registrationType === 'individual' ? '#000' : '#fff', border: '1px solid #fff', fontSize: '10px', padding: '10px' }}
+                                        >
+                                            INDIVIDUAL
+                                        </button>
+                                        <button
+                                            onClick={() => setRegistrationType('team')}
+                                            className={`m-usn-input ${registrationType === 'team' ? 'active' : ''}`}
+                                            style={{ flex: 1, background: registrationType === 'team' ? '#fff' : '#111', color: registrationType === 'team' ? '#000' : '#fff', border: '1px solid #fff', fontSize: '10px', padding: '10px' }}
+                                        >
+                                            TEAM
+                                        </button>
+                                    </div>
+
+                                    {registrationType === 'team' && (
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <input
+                                                className="m-usn-input"
+                                                placeholder="ENTER TEAM NAME"
+                                                value={teamName}
+                                                onChange={(e) => setTeamName(e.target.value.toUpperCase())}
+                                                style={{ borderStyle: 'solid', borderColor: 'var(--safety-orange)' }}
+                                            />
+                                        </div>
+                                    )}
+
                                     <button
                                         className="m-group-toggle"
                                         onClick={() => setShowUSNInputs(!showUSNInputs)}
                                     >
-                                        {showUSNInputs ? "Remove Guests" : "Add Guests (Optional)"}
+                                        {showUSNInputs ? "- REMOVE MEMBERS" : registrationType === 'team' ? "+ ADD TEAM MEMBERS (USN/EMAIL)" : "+ ADD GUESTS (USN/EMAIL)"}
                                     </button>
 
                                     {showUSNInputs && (
@@ -325,7 +354,7 @@ const ActivityDetails = ({ user }) => {
                                                 <input
                                                     key={idx}
                                                     type="text"
-                                                    placeholder={`Friend USN #${idx + 1}`}
+                                                    placeholder={`MEMBER #${idx + 1} USN or EMAIL`}
                                                     value={usn}
                                                     onChange={(e) => {
                                                         const newUSNs = [...additionalUSNs];
@@ -335,7 +364,7 @@ const ActivityDetails = ({ user }) => {
                                                     className="m-usn-input"
                                                 />
                                             ))}
-                                            <div className="m-note">* You and your friends will be registered together.</div>
+                                            <div className="m-note">* YOU WILL BE REGISTERED AS THE LEAD.</div>
                                         </div>
                                     )}
 
@@ -487,7 +516,7 @@ const ActivityDetails = ({ user }) => {
                                                 onClick={() => setShowUSNInputs(!showUSNInputs)}
                                                 className="group-reg-toggle"
                                             >
-                                                {showUSNInputs ? "- REMOVE MEMBERS" : registrationType === 'team' ? "+ ADD TEAM MEMBERS (USN)" : "+ ADD GUESTS (USN)"}
+                                                {showUSNInputs ? "- REMOVE MEMBERS" : registrationType === 'team' ? "+ ADD TEAM MEMBERS (USN/EMAIL)" : "+ ADD GUESTS (USN/EMAIL)"}
                                             </button>
 
                                             {showUSNInputs && (
@@ -496,7 +525,7 @@ const ActivityDetails = ({ user }) => {
                                                         <input
                                                             key={idx}
                                                             type="text"
-                                                            placeholder={`MEMBER USN #${idx + 1}`}
+                                                            placeholder={`MEMBER USN or EMAIL #${idx + 1}`}
                                                             value={usn}
                                                             onChange={(e) => {
                                                                 const newUSNs = [...additionalUSNs];

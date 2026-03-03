@@ -37,7 +37,7 @@ function App() {
         <Routes>
           <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/explore" />} />
           <Route path="/explore" element={<Explore user={user} />} />
-          <Route path="/room/:id" element={user ? <Room user={user} /> : <Navigate to="/login" />} />
+          <Route path="/room/:id" element={user?.role === 'admin' ? <Room user={user} /> : <Navigate to="/explore" />} />
           <Route path="/event/:id" element={<EventDetails user={user} />} />
           <Route path="/activity/:id" element={<ActivityDetails user={user} />} />
           <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />} />

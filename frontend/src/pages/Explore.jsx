@@ -159,56 +159,58 @@ const Explore = ({ user }) => {
                 </div>
             </header>
 
-            {/* ACTIVE ROOMS (NODES) SECTION */}
-            <section style={{ marginBottom: '80px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
-                    <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"ACTIVE_NODES"</h2>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
-                    <div className="monospaced" style={{ fontSize: '10px', opacity: 0.4 }}>{activeRooms.length} ONLINE</div>
-                </div>
-
-                {activeRooms.length === 0 ? (
-                    <div style={{ padding: '32px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontFamily: 'monospace', fontSize: '12px', opacity: 0.5 }}>
-                        // NO ACTIVE ROOMS DETECTED //
+            {/* ACTIVE ROOMS (NODES) SECTION - ADMIN ONLY */}
+            {user?.role === 'admin' && (
+                <section style={{ marginBottom: '80px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                        <h2 className="caps" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', fontWeight: '900', opacity: 0.8 }}>"ACTIVE_NODES"</h2>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.2 }}></div>
+                        <div className="monospaced" style={{ fontSize: '10px', opacity: 0.4 }}>{activeRooms.length} ONLINE</div>
                     </div>
-                ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
-                    }}>
-                        {activeRooms.map((room) => (
-                            <Link to={`/room/${room.id}`} key={room.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className="card-industrial" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                                        <div style={{ padding: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' }}>
-                                            <Terminal size={20} color="var(--white)" style={{ opacity: 0.7 }} />
+
+                    {activeRooms.length === 0 ? (
+                        <div style={{ padding: '32px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontFamily: 'monospace', fontSize: '12px', opacity: 0.5 }}>
+                            // NO ACTIVE ROOMS DETECTED //
+                        </div>
+                    ) : (
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '24px'
+                        }}>
+                            {activeRooms.map((room) => (
+                                <Link to={`/room/${room.id}`} key={room.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <div className="card-industrial" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                            <div style={{ padding: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' }}>
+                                                <Terminal size={20} color="var(--white)" style={{ opacity: 0.7 }} />
+                                            </div>
+                                            <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4 }}>
+                                                REF: {room.id}
+                                            </div>
                                         </div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.4 }}>
-                                            REF: {room.id}
+
+                                        <h3 className="caps" style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{room.title}</h3>
+                                        <p className="monospaced" style={{ fontSize: '10px', opacity: 0.6, marginBottom: '24px', flex: 1, lineHeight: 1.5 }}>
+                                            {room.description || 'NO_DESCRIPTION'}
+                                        </p>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div className="monospaced" style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 10px #22c55e' }}></span>
+                                                LIVE
+                                            </div>
+                                            <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>
+                                                {room.timer_minutes}M SESSION
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <h3 className="caps" style={{ fontSize: '1.5rem', fontWeight: '900', marginBottom: '8px', lineHeight: 1 }}>{room.title}</h3>
-                                    <p className="monospaced" style={{ fontSize: '10px', opacity: 0.6, marginBottom: '24px', flex: 1, lineHeight: 1.5 }}>
-                                        {room.description || 'NO_DESCRIPTION'}
-                                    </p>
-
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <div className="monospaced" style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 10px #22c55e' }}></span>
-                                            LIVE
-                                        </div>
-                                        <div className="monospaced" style={{ fontSize: '9px', opacity: 0.5 }}>
-                                            {room.timer_minutes}M SESSION
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
-            </section>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            )}
 
             {/* ONGOING EVENTS SECTION */}
             <section style={{ marginBottom: '80px' }}>

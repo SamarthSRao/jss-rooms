@@ -538,8 +538,15 @@ func HandleActivityRegister(w http.ResponseWriter, r *http.Request) {
 
 			// Find user by USN (Case Insensitive)
 			var targetUser models.User
-			if err := tx.Where("LOWER(usn) = LOWER(?)", usn).First(&targetUser).Error; err != nil {
-				return fmt.Errorf("USN %s not found", usn)
+			query := tx
+			if strings.Contains(usn, "@") {
+				query = query.Where("LOWER(email) = LOWER(?)", usn)
+			} else {
+				query = query.Where("LOWER(usn) = LOWER(?)", usn)
+			}
+
+			if err := query.First(&targetUser).Error; err != nil {
+				return fmt.Errorf("User %s not found (Verify USN or Email)", usn)
 			}
 
 			// Check if already registered
@@ -648,9 +655,21 @@ func HandleTeamRegister(w http.ResponseWriter, r *http.Request) {
 
 		// 2. Register each member
 		for _, usn := range input.USNs {
+			usnOrEmail := strings.TrimSpace(usn)
+			if usnOrEmail == "" {
+				continue
+			}
+
 			var member models.User
-			if err := tx.Where("LOWER(usn) = LOWER(?)", strings.TrimSpace(usn)).First(&member).Error; err != nil {
-				return fmt.Errorf("USN %s not found", usn)
+			query := tx
+			if strings.Contains(usnOrEmail, "@") {
+				query = query.Where("LOWER(email) = LOWER(?)", usnOrEmail)
+			} else {
+				query = query.Where("LOWER(usn) = LOWER(?)", usnOrEmail)
+			}
+
+			if err := query.First(&member).Error; err != nil {
+				return fmt.Errorf("User %s not found (Verify USN or Email)", usn)
 			}
 
 			// Check if already registered
