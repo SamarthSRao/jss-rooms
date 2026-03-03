@@ -103,7 +103,8 @@ const ActivityDetails = ({ user }) => {
                     return;
                 }
                 const friends = additionalUSNs.filter(usn => usn.trim() !== '');
-                const usnsToRegister = [user.usn, ...friends];
+                const leadID = user.usn || user.email;
+                const usnsToRegister = [leadID, ...friends];
 
                 response = await axios.post(`${API_BASE_URL}/activities/register-team`, {
                     activity_id: id,
@@ -115,7 +116,8 @@ const ActivityDetails = ({ user }) => {
             } else {
                 // Filter out empty strings from additionalUSNs
                 const friends = additionalUSNs.filter(usn => usn.trim() !== '');
-                const usnsToRegister = [user.usn, ...friends];
+                const leadID = user.usn || user.email;
+                const usnsToRegister = [leadID, ...friends];
 
                 response = await axios.post(`${API_BASE_URL}/activities/register`, {
                     activity_id: id,
@@ -283,7 +285,12 @@ const ActivityDetails = ({ user }) => {
 
                             {/* MOBILE ACTION ROW */}
                             <div className="mobile-action-row">
-                                <button className="mobile-action-btn primary" onClick={isRegistered ? () => { } : handleRegister} disabled={registering}>
+                                <button className="mobile-action-btn primary" onClick={isRegistered ? () => { } : () => {
+                                    const regSection = document.querySelector('.mobile-group-reg');
+                                    if (regSection) {
+                                        regSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                }} disabled={registering}>
                                     <div className="icon-box primary">
                                         {isRegistered ? <Ticket size={24} /> : <Plus size={24} />}
                                     </div>
@@ -373,6 +380,25 @@ const ActivityDetails = ({ user }) => {
                                             {registrationMessage.text}
                                         </div>
                                     )}
+
+                                    {/* MOBILE CONFIRM BUTTON */}
+                                    <button
+                                        onClick={handleRegister}
+                                        disabled={registering}
+                                        className="btn-industrial"
+                                        style={{
+                                            width: '100%',
+                                            padding: '16px',
+                                            background: '#fff',
+                                            color: '#000',
+                                            border: 'none',
+                                            fontSize: '14px',
+                                            fontWeight: '900',
+                                            marginTop: '10px'
+                                        }}
+                                    >
+                                        {registering ? 'WAITING...' : 'CONFIRM REGISTRATION'}
+                                    </button>
                                 </div>
                             )}
 
@@ -1110,6 +1136,11 @@ const ActivityDetails = ({ user }) => {
                         justify-content: space-between; /* Space out buttons */
                         padding: 20px;
                         gap: 10px;
+                    }
+
+                    .mobile-group-reg {
+                        display: block !important;
+                        padding: 20px;
                     }
                     
                     .mobile-action-btn {
