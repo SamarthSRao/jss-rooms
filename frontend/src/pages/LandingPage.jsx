@@ -180,7 +180,7 @@ const LandingPage = () => {
                                 letterSpacing: '0.1em'
                             }}
                         >
-                            EXPLORE ROOMS <span style={{ marginLeft: '10px' }}>→</span>
+                            EXPLORE  <span style={{ marginLeft: '10px' }}>→</span>
                         </button>
                         <button
                             className="btn-industrial hover-glitch"
@@ -196,7 +196,7 @@ const LandingPage = () => {
                                 letterSpacing: '0.1em'
                             }}
                         >
-                            USER LOGIN <span style={{ marginLeft: '10px' }}>⚡</span>
+                            USER LOGIN <span style={{ marginLeft: '10px' }}></span>
                         </button>
                     </div>
                     <p style={{ marginTop: '10px', fontSize: '12px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.6)' }} className="caps">Public Access Enabled</p>
