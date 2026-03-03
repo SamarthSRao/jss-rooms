@@ -211,17 +211,7 @@ const LandingPage = () => {
                     position: 'relative',
                     zIndex: 10
                 }}>
-                    <div style={{
-                        background: 'var(--accent-purple)',
-                        color: 'white',
-                        padding: '16px 32px',
-                        borderTopLeftRadius: '20px',
-                        borderTopRightRadius: '20px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        boxShadow: '0 8px 30px rgba(120, 50, 255, 0.25)',
-                    }} className="caps">
+                    <div className="schedule-section-header caps">
                         <span style={{ fontSize: '1.6rem', fontWeight: '900', letterSpacing: '0.05em' }}>
                             FEBRUARY_21
                         </span>
@@ -230,20 +220,10 @@ const LandingPage = () => {
                         </div>
                     </div>
 
-                    <div style={{
-                        background: 'rgba(10, 10, 10, 0.7)',
-                        backdropFilter: 'blur(30px)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderTop: 'none',
-                        padding: '40px 32px',
-                        borderBottomLeftRadius: '20px',
-                        borderBottomRightRadius: '20px',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
+                    <div className="schedule-section-content">
                         <div className="cross-hatch" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.03, pointerEvents: 'none' }}></div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                        <div className="phase-header" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
                             <h2 className="caps" style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', margin: 0, lineHeight: 1 }}>
                                 PHASE_01 <span style={{ opacity: 0.3 }}>|</span> THE_INCEPTION
                             </h2>
@@ -251,13 +231,7 @@ const LandingPage = () => {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
-                                gap: '30px',
-                                paddingBottom: '24px',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)'
-                            }}>
+                            <div className="event-row">
                                 <div className="monospaced" style={{ fontSize: '12px', color: 'var(--accent-purple)', fontWeight: 'bold', paddingTop: '4px' }}>
                                     09:00 — 11:00
                                 </div>
@@ -269,13 +243,7 @@ const LandingPage = () => {
                                 </div>
                             </div>
 
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
-                                gap: '30px',
-                                paddingBottom: '24px',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)'
-                            }}>
+                            <div className="event-row">
                                 <div className="monospaced" style={{ fontSize: '12px', color: 'var(--accent-purple)', fontWeight: 'bold', paddingTop: '4px' }}>
                                     11:00 — 12:30
                                 </div>
@@ -287,11 +255,7 @@ const LandingPage = () => {
                                 </div>
                             </div>
 
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'minmax(100px, 140px) 1fr',
-                                gap: '30px'
-                            }}>
+                            <div className="event-row">
                                 <div className="monospaced" style={{ fontSize: '12px', color: '#22c55e', fontWeight: 'bold', paddingTop: '4px' }}>
                                     12:30 — ∞
                                 </div>
